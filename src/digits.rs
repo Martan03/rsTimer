@@ -73,3 +73,13 @@ pub fn get_digits() -> Vec<[&'static str; 5]> {
         ],
     ]
 }
+
+pub fn get_decimal_point() -> [&'static str; 5] {
+    return  [
+        "     ",
+        "     ",
+        "  __ ",
+        " /\\_\\",
+        " \\/_/",
+    ];
+}
