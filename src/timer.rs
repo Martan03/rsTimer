@@ -30,6 +30,7 @@ impl Timer {
 
     pub fn start_timer(&mut self) {
         let mut last = Duration::new(0, 0);
+        self.con = true;
         let start = Instant::now();
         while self.con {
             self.key_listener();

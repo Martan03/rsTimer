@@ -5,7 +5,7 @@ mod num_parser;
 mod timer;
 
 fn main() {
-    println!("\x1b[?1049h\x1b[J");
+    println!("\x1b[?1049h\x1b[H\x1b[J");
 
     let mut game = Gamedata::new();
     game.start_game();
