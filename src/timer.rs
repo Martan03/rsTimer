@@ -3,7 +3,6 @@ use crossterm::{
     Result,
 };
 use std::{
-    ops::Sub,
     time::{Duration, Instant},
 };
 
@@ -25,22 +24,13 @@ impl Timer {
     }
 
     pub fn start_timer(&mut self) -> Result<()> {
-        let mut last = Duration::new(0, 0);
         let start = Instant::now();
         self.con = true;
 
         while self.con {
-            if poll(Duration::from_millis(100))? {
-                self.key_listener()?;
-            }
-            let time = start.elapsed();
-            if (time.sub(last).as_millis() as i128 - self.decimals as i128) < 0
-            {
-                continue;
-            }
-
-            last = time;
-            print_time(get_time(time.as_secs_f64(), self.decimals));
+            self.key_listener()?;
+            
+            print_time(get_time(start.elapsed().as_secs_f64(), self.decimals));
         }
 
         self.time = start.elapsed();
@@ -50,10 +40,12 @@ impl Timer {
     }
 
     fn key_listener(&mut self) -> Result<()> {
-        let event = read()?;
-
-        if event == Event::Key(KeyCode::Char(' ').into()) {
-            self.con = false;
+        if poll(Duration::from_millis(1))? {
+            let event = read()?;
+    
+            if event == Event::Key(KeyCode::Char(' ').into()) {
+                self.con = false;
+            }
         }
 
         Ok(())
