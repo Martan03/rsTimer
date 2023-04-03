@@ -1,27 +1,22 @@
-use self::digits::{get_digits, get_decimal_point};
+use self::digits::{get_digits};
 
-#[path = "digits.rs"] mod digits;
+#[path = "digits.rs"]
+mod digits;
 
 pub fn print_number(num: f64) {
     let digit_lines = get_digits();
-    let decimal_point = get_decimal_point();
+    let mut numbers: Vec<String> = Vec::new();
+    numbers.resize_with(5,  String::new);
 
-    let ipart = num.floor();
-    let dpart = ((num % 1.0) * 1000.0).round();
-    
-    for line in 0..5 {
-        for digit in ipart.to_string().chars() {
-            let dig = digit.to_digit(10).unwrap();
-            print!("{}", digit_lines[dig as usize][line]);
+    let number = format!("{:.3}", num);
+
+    for digit in number.chars() {
+        for i in 0..5 as usize {
+            numbers[i].push_str(digit_lines[&digit][i]);
         }
+    }
 
-        print!("{}", decimal_point[line]);
-
-        for digit in dpart.to_string().chars() {
-            let dig = digit.to_digit(10).unwrap();
-            print!("{}", digit_lines[dig as usize][line]);
-        }
-
-        println!();
+    for line in numbers {
+        println!("{line}");
     }
 }
