@@ -9,9 +9,6 @@ use std::{
 
 use crate::num_parser::{get_time, print_time};
 
-#[path = "num_parser.rs"]
-mod num_parser;
-
 pub struct Timer {
     decimals: usize,
     time: Duration,

@@ -1,7 +1,4 @@
-use self::digits::get_digits;
-
-#[path = "digits.rs"]
-mod digits;
+use crate::digits::get_digits;
 
 pub fn get_time(num: f64, decimals: usize) -> Vec<String> {
     let digit_lines = get_digits();
