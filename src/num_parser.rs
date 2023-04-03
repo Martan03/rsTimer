@@ -1,4 +1,4 @@
-use self::digits::{get_digits};
+use self::digits::get_digits;
 
 #[path = "digits.rs"]
 mod digits;
@@ -6,7 +6,7 @@ mod digits;
 pub fn get_time(num: f64, decimals: usize) -> Vec<String> {
     let digit_lines = get_digits();
     let mut numbers: Vec<String> = Vec::new();
-    numbers.resize_with(5,  String::new);
+    numbers.resize_with(5, String::new);
 
     let number = format!("{:.1$}", num, decimals);
 
@@ -30,8 +30,12 @@ pub fn print_time(time: Vec<String>) {
     let px = (w as usize - get_time_length(&time)) / 2;
     let mut py = (h as usize - 5) / 2;
 
+    let mut r = 0;
+    let mut g = 220;
     for line in time {
-        println!("\x1b[{py};{px}H{line}");
+        println!("\x1b[{py};{px}H\x1b[38;2;{r};{g};255m{line}");
+        r += 40;
+        g -= 30;
         py += 1;
     }
 }
