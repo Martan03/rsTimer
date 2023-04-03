@@ -1,10 +1,10 @@
 use crate::gameloop::Gamedata;
 use crossterm::Result;
 
+mod digits;
 mod gameloop;
 mod num_parser;
 mod timer;
-mod digits;
 
 fn main() -> Result<()> {
     println!("\x1b[?1049h\x1b[H\x1b[J");
