@@ -24,6 +24,9 @@ impl Timer {
     }
 
     pub fn start_timer(&mut self) -> Result<()> {
+        print!("\x1b[2J");
+        print_time(get_time(0.0, self.decimals));
+
         let start = Instant::now();
         self.con = true;
 

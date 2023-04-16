@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::timer::Timer;
+use crate::{timer::Timer, scramble::Scramble};
 
 use crossterm::{
     event::{poll, read, Event, KeyCode},
@@ -13,16 +13,18 @@ use self::num_parser::{get_time, print_time};
 #[path = "num_parser.rs"]
 mod num_parser;
 
-pub struct Gamedata {
+pub struct Game {
     timer: Timer,
     con: bool,
+    scramble: Scramble,
 }
 
-impl Gamedata {
-    pub fn new() -> Gamedata {
-        Gamedata {
+impl Game {
+    pub fn new(scramble_type: String) -> Game {
+        Game {
             timer: Timer::new(3),
             con: false,
+            scramble: Scramble::new(scramble_type),
         }
     }
 
@@ -30,6 +32,9 @@ impl Gamedata {
         enable_raw_mode()?;
 
         self.con = true;
+
+        self.scramble.generate();
+        self.print_scramble();
         print_time(get_time(0.0, 3));
 
         while self.con {
@@ -46,11 +51,20 @@ impl Gamedata {
 
         if event == Event::Key(KeyCode::Char(' ').into()) {
             self.timer.start_timer()?;
+            self.scramble.generate();
+            self.print_scramble();
         }
 
         if event == Event::Key(KeyCode::Esc.into()) {
             self.con = false;
         }
         Ok(())
+    }
+
+    fn print_scramble(&mut self) {
+        let (w, _) = termion::terminal_size().unwrap();
+        let px = (w as usize - self.scramble.get().len()) / 2;
+
+        println!("\x1b[1;{px}H\x1b[0m{}", self.scramble.get());
     }
 }
