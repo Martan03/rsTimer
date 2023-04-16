@@ -1,19 +1,45 @@
 use std::vec;
 
-pub fn get_scramble(scramble_type: &str) -> Vec<Vec<&'static str>> {
+/// Gets scramble length and scramble moves
+/// * 'scramble_type' - type of scramble (eg. 3x3x3)
+pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
     match scramble_type {
-        "3x3" => get_3x3(),
-        _ => vec![vec![]],
+        "2x2x2" => (9, get_2x2x2()),
+        "3x3x3" => (21, get_3x3x3()),
+        "4x4x4" => (43, get_4x4x4()),
+        _ => (0, vec![vec![]]),
     }
 }
 
-fn get_3x3() -> Vec<Vec<&'static str>> {
+/// Gets moves for 2x2x2 scramble
+fn get_2x2x2() -> Vec<Vec<&'static str>> {
+    vec![
+        vec!["R", "R'", "R2"],
+        vec!["U", "U'", "U2"],
+        vec!["F", "F'", "F2"],
+    ]
+}
+
+/// Gets moves for 3x3x3 scramble
+fn get_3x3x3() -> Vec<Vec<&'static str>> {
     vec![
         vec!["R", "R'", "R2"],
         vec!["L", "L'", "L2"],
         vec!["U", "U'", "U2"],
         vec!["D", "D'", "D2"],
         vec!["F", "F'", "F2"],
+        vec!["B", "B'", "B2"],
+    ]
+}
+
+/// Gets moves for 4x4x4 scramble
+fn get_4x4x4() -> Vec<Vec<&'static str>> {
+    vec![
+        vec!["R", "R'", "R2", "Rw", "Rw'", "Rw2"],
+        vec!["L", "L'", "L2", "Lw", "Lw'", "Lw2"],
+        vec!["U", "U'", "U2", "Uw", "Uw'", "Uw2"],
+        vec!["D", "D'", "D2", "Dw", "Dw'", "Dw2"],
+        vec!["F", "F'", "F2", "Fw", "Fw'", "Fw2"],
         vec!["B", "B'", "B2"],
     ]
 }

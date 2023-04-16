@@ -15,6 +15,8 @@ pub struct Timer {
 }
 
 impl Timer {
+    /// Constructs a new Timer
+    /// * 'decimals' - how many decimals will be printed
     pub fn new(decimals: usize) -> Self {
         Timer {
             decimals,
@@ -23,13 +25,17 @@ impl Timer {
         }
     }
 
+    /// Starts timer
     pub fn start_timer(&mut self) -> Result<()> {
+        // Clears screen and prints
         print!("\x1b[2J");
+
         print_time(get_time(0.0, self.decimals));
 
         let start = Instant::now();
         self.con = true;
 
+        // Timer loop
         while self.con {
             self.key_listener()?;
             
@@ -42,6 +48,7 @@ impl Timer {
         Ok(())
     }
 
+    // Listens to key presses
     fn key_listener(&mut self) -> Result<()> {
         if poll(Duration::from_millis(1))? {
             let event = read()?;

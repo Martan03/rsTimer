@@ -1,25 +1,29 @@
 use rand::Rng;
 
-use crate::scrambles::get_scramble;
-
 pub struct Scramble {
     moves: Vec<Vec<&'static str>>,
     scramble: String,
-    length: i64,
+    length: usize,
 }
 
 impl Scramble {
-    pub fn new(scramble_type: String) -> Scramble {
+    /// Constructs a new Scramble
+    pub fn new(
+        len: usize,
+        moves: Vec<Vec<&'static str>>
+    ) -> Scramble {
         Scramble {
-            moves: get_scramble(&scramble_type),
+            moves: moves,
             scramble: "".to_owned(),
-            length: 21,
+            length: len,
         }
     }
 
+    /// Generates new scramble
     pub fn generate(&mut self) {
         self.scramble = "".to_owned();
         let mut last: usize = 0;
+
         for i in 0..self.length {
             let mut r = rand::thread_rng().gen_range(0..self.moves.len());
             while i > 0 && r == last {
@@ -35,6 +39,7 @@ impl Scramble {
         self.scramble = self.scramble.trim().to_owned();
     }
 
+    /// Gets scramble
     pub fn get(&mut self) -> &str {
         return &self.scramble;
     }
