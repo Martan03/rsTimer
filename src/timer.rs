@@ -2,9 +2,7 @@ use crossterm::{
     event::{poll, read, Event, KeyCode},
     Result,
 };
-use std::{
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use crate::num_parser::{get_time, print_time};
 
@@ -38,7 +36,7 @@ impl Timer {
         // Timer loop
         while self.con {
             self.key_listener()?;
-            
+
             print_time(get_time(start.elapsed().as_secs_f64(), self.decimals));
         }
 
@@ -52,12 +50,16 @@ impl Timer {
     fn key_listener(&mut self) -> Result<()> {
         if poll(Duration::from_millis(1))? {
             let event = read()?;
-    
+
             if event == Event::Key(KeyCode::Char(' ').into()) {
                 self.con = false;
             }
         }
 
         Ok(())
+    }
+
+    pub fn get_time(&self) -> Duration {
+        self.time
     }
 }

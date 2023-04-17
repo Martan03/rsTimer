@@ -8,10 +8,7 @@ pub struct Scramble {
 
 impl Scramble {
     /// Constructs a new Scramble
-    pub fn new(
-        len: usize,
-        moves: Vec<Vec<&'static str>>
-    ) -> Scramble {
+    pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Scramble {
         Scramble {
             moves: moves,
             scramble: "".to_owned(),
@@ -30,7 +27,7 @@ impl Scramble {
                 r = rand::thread_rng().gen_range(0..self.moves.len());
             }
             last = r;
-    
+
             let c = rand::thread_rng().gen_range(0..self.moves[r].len());
 
             self.scramble.push_str(&self.moves[r][c]);

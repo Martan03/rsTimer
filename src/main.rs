@@ -7,9 +7,10 @@ use crate::{gameloop::Game, scrambles::get_scramble};
 mod digits;
 mod gameloop;
 mod num_parser;
-mod timer;
 mod scramble;
 mod scrambles;
+mod stats;
+mod timer;
 
 fn main() -> Result<()> {
     // Parse arguments
@@ -41,19 +42,19 @@ fn main() -> Result<()> {
     }
 
     // Saves screen, clears screen and hides cursor
-    println!("\x1b[?1049h\x1b[2J\x1b[?25l");
+    print!("\x1b[?1049h\x1b[2J\x1b[?25l");
 
     // Start the app
-    let mut game = Game::new(len, moves);
+    let mut game = Game::new(len, moves)?;
     game.start_game()?;
 
     // Restores screen
-    println!("\x1b[?1049l");
+    print!("\x1b[?1049l\x1b[?25h");
 
     Ok(())
 }
 
-/// Displays help 
+/// Displays help
 fn help() {
     println!("Help not implemented yet");
 }

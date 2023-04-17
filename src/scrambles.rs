@@ -36,9 +36,9 @@ fn get_3x3x3() -> Vec<Vec<&'static str>> {
 fn get_4x4x4() -> Vec<Vec<&'static str>> {
     vec![
         vec!["R", "R'", "R2", "Rw", "Rw'", "Rw2"],
-        vec!["L", "L'", "L2", "Lw", "Lw'", "Lw2"],
+        vec!["L", "L'", "L2"],
         vec!["U", "U'", "U2", "Uw", "Uw'", "Uw2"],
-        vec!["D", "D'", "D2", "Dw", "Dw'", "Dw2"],
+        vec!["D", "D'", "D2"],
         vec!["F", "F'", "F2", "Fw", "Fw'", "Fw2"],
         vec!["B", "B'", "B2"],
     ]
