@@ -5,10 +5,13 @@ use dirs::config_dir;
 use eyre::{Report, Result};
 use serde::{Deserialize, Serialize};
 
+use crossterm::event::{poll, read, Event, KeyCode};
+
 #[derive(Serialize, Deserialize)]
 pub struct Stat {
     time: Duration,
     scramble: String,
+    comment: String,
     #[serde(with = "my_date_format")]
     datetime: DateTime<Local>,
 }
@@ -44,10 +47,11 @@ mod my_date_format {
 }
 
 impl Stat {
-    pub fn new(time: Duration, scramble: String) -> Stat {
+    pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
         Stat {
             time,
             scramble,
+            comment,
             datetime: offset::Local::now(),
         }
     }
@@ -84,6 +88,37 @@ impl Stats {
         Ok(())
     }
 
+    /// Displays statistics
+    pub fn display(&mut self) -> Result<()> {
+        print!("\x1b[H\x1b[J");
+
+        for stat in self.stats.iter() {
+            println!("{}", stat.time.as_secs_f64())
+        }
+
+        let mut con = true;
+        while con {
+            if poll(Duration::from_millis(100))? {
+                con = self.key_listener()?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Listens for key presses
+    fn key_listener(&mut self) -> Result<bool> {
+        let event = read()?;
+
+        // Ends statistics loop when ESC pressed
+        if event == Event::Key(KeyCode::Esc.into())
+            || event == Event::Key(KeyCode::Tab.into())
+        {
+            return Ok(false);
+        }
+        Ok(true)
+    }
+
     /// Adds stat to stats
     pub fn add_stat(&mut self, stat: Stat) {
         self.stats.push(stat);
@@ -91,13 +126,16 @@ impl Stats {
 
     /// Gets the directory to save stats in
     fn get_stats_dir() -> Result<String> {
+        Ok("./stats".to_owned())
+        /* For debugging purposes stats directory will be in code directory
         let config =
-            config_dir().ok_or(Report::msg("Can't get stats directory"))?;
+        config_dir().ok_or(Report::msg("Can't get stats directory"))?;
 
         Ok(config
             .to_str()
             .ok_or(Report::msg("Invalid path to stats"))?
             .to_owned()
             + "/rstimer/stats")
+        */
     }
 }

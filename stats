@@ -1,0 +1,22 @@
+{
+  "stats": [
+    {
+      "time": {
+        "secs": 76,
+        "nanos": 903880195
+      },
+      "scramble": "D2 B2 U2 F2 R' L B L2 R F L' R2 D L2 F2 D' U2 F R D' U'",
+      "comment": "",
+      "datetime": "2023-04-17 22:18:38"
+    },
+    {
+      "time": {
+        "secs": 2,
+        "nanos": 661831857
+      },
+      "scramble": "L B R' D2 F2 B' F2 D U2 R D' U2 D' F2 B2 D R2 U2 L2 F' D'",
+      "comment": "",
+      "datetime": "2023-04-17 22:52:04"
+    }
+  ]
+}

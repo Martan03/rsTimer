@@ -69,10 +69,16 @@ impl Game {
             self.stats.add_stat(Stat::new(
                 self.timer.get_time(),
                 self.scramble.get().to_owned(),
+                "".to_owned(),
             ));
 
             self.scramble.generate();
             self.print_scramble();
+        }
+        // Opens statistics
+        if event == Event::Key(KeyCode::Tab.into()) {
+            self.stats.display()?;
+            self.print_screen();
         }
         // Ends game loop when ESC pressed
         if event == Event::Key(KeyCode::Esc.into()) {
@@ -80,6 +86,13 @@ impl Game {
             self.con = false;
         }
         Ok(())
+    }
+
+    /// Prints screen (scramble, time)
+    fn print_screen(&mut self) {
+        print!("\x1b[H\x1b[J");
+        self.print_scramble();
+        print_time(get_time(self.timer.get_time().as_secs_f64(), 3));
     }
 
     /// Prints scramble
