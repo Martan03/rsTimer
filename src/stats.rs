@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{time::Duration, io::Write};
 
 use chrono::{offset, DateTime, Local};
 use dirs::config_dir;
@@ -92,9 +92,9 @@ impl Stats {
     pub fn display(&mut self) -> Result<()> {
         print!("\x1b[H\x1b[J");
 
-        for stat in self.stats.iter() {
-            println!("{}", stat.time.as_secs_f64())
-        }
+        self.print_border();
+
+        self.print_stats(0, 10);
 
         let mut con = true;
         while con {
@@ -124,6 +124,31 @@ impl Stats {
         self.stats.push(stat);
     }
 
+    fn print_stats(&mut self, from: usize, mut to: usize) {
+        if to > self.stats.len() {
+            to = self.stats.len();
+        }
+
+        print!("\x1b[H");
+        for stat in self.stats[from..to].iter() {
+            let hours = stat.time.as_secs() / 3600;
+            let mins = (stat.time.as_secs() / 60) % 60;
+            let secs_mils = stat.time.as_secs_f32() % 60.;
+
+            print!("\x1b[1E\x1b[3G");
+            if hours != 0 {
+                print!("{hours}:{:06}:{:06.3}", mins, secs_mils);
+            }
+            else if mins != 0 {
+                print!("{mins}:{:06.3}", secs_mils);
+            }
+            else {
+                print!("{:.3}", secs_mils);
+            }
+        }
+        _ = std::io::stdout().flush();
+    }
+
     /// Gets the directory to save stats in
     fn get_stats_dir() -> Result<String> {
         Ok("./stats".to_owned())
@@ -137,5 +162,17 @@ impl Stats {
             .to_owned()
             + "/rstimer/stats")
         */
+    }
+
+    /// Prints border around window
+    fn print_border(&mut self) {
+        let (w, h) = termion::terminal_size().unwrap();
+
+        print!("\x1b[H\x1b[0m{:▄<1$}", "", w as usize);
+        for _i in 1..h - 1 {
+            print!("\x1b[1E█\x1b[{w}G█")
+        }
+        print!("\x1b[1E{:▀<1$}", "", w as usize);
+        _ = std::io::stdout().flush();
     }
 }
