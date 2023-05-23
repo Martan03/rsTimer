@@ -58,23 +58,24 @@ impl Stat {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct Stats {
+pub struct Session {
+    pub name: String,
     stats: Vec<Stat>,
 }
 
-impl Stats {
+impl Session {
     /// Loads stats from json file
-    pub fn load() -> Result<Stats> {
-        let stats = match std::fs::read_to_string(Stats::get_stats_dir()?) {
-            Err(_) => Stats { stats: Vec::new() },
-            Ok(s) => serde_json::from_str::<Stats>(&s)?,
+    pub fn load() -> Result<Session> {
+        let stats = match std::fs::read_to_string(Session::get_stats_dir()?) {
+            Err(_) => Session { name: "1".to_owned(), stats: Vec::new() },
+            Ok(s) => serde_json::from_str::<Session>(&s)?,
         };
         Ok(stats)
     }
 
     /// Saves stats to json file
     pub fn save(&self) -> Result<()> {
-        let filename = Stats::get_stats_dir()?;
+        let filename = Session::get_stats_dir()?;
         let path = std::path::Path::new(&filename);
         let prefix = path
             .parent()
@@ -82,7 +83,7 @@ impl Stats {
         std::fs::create_dir_all(&prefix)?;
         std::fs::File::create(&path)?;
 
-        let text = serde_json::to_string_pretty::<Stats>(self)?;
+        let text = serde_json::to_string_pretty::<Session>(self)?;
         std::fs::write(&path, text)?;
 
         Ok(())
@@ -174,5 +175,32 @@ impl Stats {
         }
         print!("\x1b[1E{:▀<1$}", "", w as usize);
         _ = std::io::stdout().flush();
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Stats {
+    stats: Vec<Session>,
+}
+
+impl Stats {
+    /// Loads all sessions from json file
+    pub fn load_all() -> Result<Stats> {
+        let stats = match std::fs::read_to_string(Session::get_stats_dir()?) {
+            Err(_) => Stats { stats: Vec::new() },
+            Ok(s) => serde_json::from_str::<Stats>(&s)?,
+        };
+        Ok(stats)
+    }
+
+    pub fn load(name: String) -> Result<Session> {
+        let sessions = Stats::load_all()?;
+        for session in sessions.stats {
+            if session.name == name {
+                return Ok(session);
+            }
+        }
+
+        return Err(Report::msg("No session found"));
     }
 }
