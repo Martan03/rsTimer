@@ -1,4 +1,4 @@
-use std::{time::Duration, io::Write};
+use std::{io::Write, time::Duration, collections::HashMap};
 
 use chrono::{offset, DateTime, Local};
 use dirs::config_dir;
@@ -7,53 +7,17 @@ use serde::{Deserialize, Serialize};
 
 use crossterm::event::{poll, read, Event, KeyCode};
 
+use crate::stats::stat::Stat;
+
 #[derive(Serialize, Deserialize)]
-pub struct Stat {
-    time: Duration,
-    scramble: String,
-    comment: String,
-    #[serde(with = "my_date_format")]
-    datetime: DateTime<Local>,
+pub struct Stats {
+    sessions: HashMap<String, Vec<Stat>>,
 }
 
-mod my_date_format {
-    use chrono::{DateTime, Local, TimeZone};
-    use serde::{self, Deserialize, Deserializer, Serializer};
-
-    const FORMAT: &'static str = "%Y-%m-%d %H:%M:%S";
-
-    pub fn serialize<S>(
-        date: &DateTime<Local>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let s = format!("{}", date.format(FORMAT));
-        serializer.serialize_str(&s)
-    }
-
-    pub fn deserialize<'de, D>(
-        deserializer: D,
-    ) -> Result<DateTime<Local>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        Local
-            .datetime_from_str(&s, FORMAT)
-            .map_err(serde::de::Error::custom)
-    }
-}
-
-impl Stat {
-    pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
-        Stat {
-            time,
-            scramble,
-            comment,
-            datetime: offset::Local::now(),
-        }
+impl Stats {
+    // Adds given stat to the stats
+    pub fn add_stat(&self, stat: Stat, session: String) {
+        self.sessions.entry(session).or_insert(Vec::new()).push(stat);
     }
 }
 
@@ -67,7 +31,10 @@ impl Session {
     /// Loads stats from json file
     pub fn load() -> Result<Session> {
         let stats = match std::fs::read_to_string(Session::get_stats_dir()?) {
-            Err(_) => Session { name: "1".to_owned(), stats: Vec::new() },
+            Err(_) => Session {
+                name: "1".to_owned(),
+                stats: Vec::new(),
+            },
             Ok(s) => serde_json::from_str::<Session>(&s)?,
         };
         Ok(stats)
@@ -139,11 +106,9 @@ impl Session {
             print!("\x1b[1E\x1b[3G");
             if hours != 0 {
                 print!("{hours}:{:06}:{:06.3}", mins, secs_mils);
-            }
-            else if mins != 0 {
+            } else if mins != 0 {
                 print!("{mins}:{:06.3}", secs_mils);
-            }
-            else {
+            } else {
                 print!("{:.3}", secs_mils);
             }
         }

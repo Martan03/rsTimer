@@ -9,7 +9,10 @@ mod gameloop;
 mod num_parser;
 mod scramble;
 mod scrambles;
-mod stats;
+mod stats {
+    pub mod stat;
+    pub mod stats;
+}
 mod timer;
 
 fn main() -> Result<()> {
