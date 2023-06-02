@@ -14,7 +14,12 @@ pub struct Timer {
 
 impl Timer {
     /// Constructs a new Timer
-    /// * 'decimals' - how many decimals will be printed
+    /// 
+    /// **Parameters:**
+    /// * `decimals` - how many decimals will be printed
+    /// 
+    /// **Returns:**
+    /// * Created Timer struct
     pub fn new(decimals: usize) -> Self {
         Timer {
             decimals,
@@ -23,7 +28,10 @@ impl Timer {
         }
     }
 
-    /// Starts timer
+    /// Starts timer, prints it periodically, stops when space pressed
+    /// 
+    /// **Result:**
+    /// * Ok() on success, else Err
     pub fn start_timer(&mut self) -> Result<()> {
         // Clears screen and prints
         print!("\x1b[2J");
@@ -46,7 +54,10 @@ impl Timer {
         Ok(())
     }
 
-    // Listens to key presses
+    /// Listens to key presses and reacts to it
+    /// 
+    /// **Returns:**
+    /// * Ok() on success, else Err
     fn key_listener(&mut self) -> Result<()> {
         if poll(Duration::from_millis(1))? {
             let event = read()?;

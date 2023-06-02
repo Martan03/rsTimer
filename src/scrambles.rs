@@ -1,7 +1,12 @@
 use std::vec;
 
 /// Gets scramble length and scramble moves
-/// * 'scramble_type' - type of scramble (eg. 3x3x3)
+/// 
+/// **Parameters:**
+/// * `scramble_type` - type of scramble (eg. 3x3x3)
+/// 
+/// **Returns:**
+/// * Tupple consisting of scramble size and moves vector
 pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
     match scramble_type {
         "2x2x2" => (9, get_2x2x2()),
@@ -11,7 +16,10 @@ pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
     }
 }
 
-/// Gets moves for 2x2x2 scramble
+/// Gets move groups for 2x2x2 scramble
+/// 
+/// **Returns:**
+/// * Move groups vector
 fn get_2x2x2() -> Vec<Vec<&'static str>> {
     vec![
         vec!["R", "R'", "R2"],
@@ -20,7 +28,10 @@ fn get_2x2x2() -> Vec<Vec<&'static str>> {
     ]
 }
 
-/// Gets moves for 3x3x3 scramble
+/// Gets move grouops for 3x3x3 scramble
+/// 
+/// **Returns:**
+/// * Move groups vector
 fn get_3x3x3() -> Vec<Vec<&'static str>> {
     vec![
         vec!["R", "R'", "R2"],
@@ -32,7 +43,10 @@ fn get_3x3x3() -> Vec<Vec<&'static str>> {
     ]
 }
 
-/// Gets moves for 4x4x4 scramble
+/// Gets move groups for 4x4x4 scramble
+/// 
+/// **Returns:**
+/// * Move groups vector
 fn get_4x4x4() -> Vec<Vec<&'static str>> {
     vec![
         vec!["R", "R'", "R2", "Rw", "Rw'", "Rw2"],
