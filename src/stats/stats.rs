@@ -15,9 +15,57 @@ pub struct Stats {
 }
 
 impl Stats {
-    // Adds given stat to the stats
-    pub fn add_stat(&self, stat: Stat, session: String) {
+    /// Adds given stat to the stats of given session
+    /// 
+    /// **Parameters:**
+    /// * `stat` - stat to be added
+    /// * `session` - session name
+    pub fn add(&self, stat: Stat, session: String) {
         self.sessions.entry(session).or_insert(Vec::new()).push(stat);
+    }
+
+    /// Gets session by given name
+    /// 
+    /// **Parameters:**
+    /// * `session` - session name
+    /// 
+    /// **Returns:**
+    /// * Stats vector of the session with session name
+    pub fn get_session(&self, session: String) -> Vec<Stat> {
+        self.sessions[session]
+    }
+
+    /// Loads stats from JSON file
+    /// 
+    /// **Returns:**
+    /// * Loaded stats in Result
+    pub fn load() -> Result<Stats> {
+        let stats = match std::fs::read_to_string("./stats".to_owned()) {
+            Err(_) => Stats {
+                sessions: HashMap::new(),
+            },
+            Ok(s) => serde_json::from_str::<Session>(&s)?,
+        };
+        Ok(stats)
+    }
+
+    /// Saves stats to json file
+    /// 
+    /// **Returns:**
+    /// * Ok() on success, else Err with Report message
+    pub fn save(&self) -> Result<()> {
+        let filename = "./stats".to_owned();
+        let path = std::path::Path::new(&filename);
+        let prefix = path
+            .parent()
+            .ok_or(Report::msg("Error creating stats directory"))?;
+        std::fs::create_dir_all(&prefix)?;
+        std::fs::File::create(&path)?;
+
+        let text = serde_json::to_string_pretty::<Stats>(self)?;
+        std::fs::write(&path, text)?;
+
+        Ok(())
     }
 }
 
@@ -115,7 +163,7 @@ impl Session {
         _ = std::io::stdout().flush();
     }
 
-    /// Gets the directory to save stats in
+    // Gets the directory to save stats in
     fn get_stats_dir() -> Result<String> {
         Ok("./stats".to_owned())
         /* For debugging purposes stats directory will be in code directory
@@ -156,16 +204,5 @@ impl Stats {
             Ok(s) => serde_json::from_str::<Stats>(&s)?,
         };
         Ok(stats)
-    }
-
-    pub fn load(name: String) -> Result<Session> {
-        let sessions = Stats::load_all()?;
-        for session in sessions.stats {
-            if session.name == name {
-                return Ok(session);
-            }
-        }
-
-        return Err(Report::msg("No session found"));
     }
 }
