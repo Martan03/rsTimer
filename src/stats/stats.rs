@@ -22,15 +22,18 @@ impl Stats {
         self.sessions.entry(session).or_insert(Vec::new()).push(stat);
     }
 /*
-/// Gets session by given name
-/// 
+    /// Gets session by given name
+    /// 
     /// **Parameters:**
     /// * `session` - session name
     /// 
     /// **Returns:**
     /// * Stats vector of the session with session name
     pub fn get_session(&mut self, session: String) -> Vec<Stat> {
-        self.sessions[&session]
+        if let Some(vector) = self.sessions.get(&session) {
+            return vector;
+        }
+        return Vec::new();
     }
 */
     
