@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::{
     scramble::Scramble,
-    stats::{Stat, Stats},
+    stats::{stats::Stats, stat::Stat},
     timer::Timer,
 };
 
@@ -66,18 +66,18 @@ impl Game {
         // Starts timer when Space pressed
         if event == Event::Key(KeyCode::Char(' ').into()) {
             self.timer.start_timer()?;
-            self.stats.add_stat(Stat::new(
+            self.stats.add(Stat::new(
                 self.timer.get_time(),
                 self.scramble.get().to_owned(),
                 "".to_owned(),
-            ));
+            ), "test".to_owned());
 
             self.scramble.generate();
             self.print_scramble();
         }
         // Opens statistics
         if event == Event::Key(KeyCode::Tab.into()) {
-            self.stats.display()?;
+            //self.stats.display()?;
             self.print_screen();
         }
         // Ends game loop when ESC pressed
