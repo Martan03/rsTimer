@@ -26,8 +26,13 @@ pub struct Game {
 
 impl Game {
     /// Constructs a new Game
-    /// * 'len' - length of the scramble
-    /// * 'moves' - moves to make scramble off
+    /// 
+    /// **Parameters:**
+    /// * `len` - length of the scramble
+    /// * `moves` - moves to make scramble of
+    /// 
+    /// **Returns:**
+    /// * Constructed Game in Result
     pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Result<Game> {
         Ok(Game {
             timer: Timer::new(3),
@@ -38,6 +43,9 @@ impl Game {
     }
 
     /// Starts main game loop
+    /// 
+    /// **Returns:**
+    /// * Ok() on success, else Err
     pub fn start_game(&mut self) -> Result<()> {
         enable_raw_mode()?;
 
@@ -60,6 +68,9 @@ impl Game {
     }
 
     /// Listens to key presses
+    /// 
+    /// **Returns:**
+    /// * Ok() on success, else Err
     fn key_listener(&mut self) -> Result<()> {
         let event = read()?;
 

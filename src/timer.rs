@@ -9,7 +9,7 @@ use crate::num_parser::{get_time, print_time};
 pub struct Timer {
     decimals: usize,
     time: Duration,
-    con: bool,
+    running: bool,
 }
 
 impl Timer {
@@ -24,7 +24,7 @@ impl Timer {
         Timer {
             decimals,
             time: Duration::new(0, 0),
-            con: false,
+            running: false,
         }
     }
 
@@ -39,10 +39,10 @@ impl Timer {
         print_time(get_time(0.0, self.decimals));
 
         let start = Instant::now();
-        self.con = true;
+        self.running = true;
 
         // Timer loop
-        while self.con {
+        while self.running {
             self.key_listener()?;
 
             print_time(get_time(start.elapsed().as_secs_f64(), self.decimals));
@@ -63,7 +63,7 @@ impl Timer {
             let event = read()?;
 
             if event == Event::Key(KeyCode::Char(' ').into()) {
-                self.con = false;
+                self.running = false;
             }
         }
 
