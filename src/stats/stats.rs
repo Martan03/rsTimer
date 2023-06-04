@@ -21,7 +21,7 @@ impl Stats {
     pub fn add(&mut self, stat: Stat, session: String) {
         self.sessions.entry(session).or_insert(Vec::new()).push(stat);
     }
-/*
+
     /// Gets session by given name
     /// 
     /// **Parameters:**
@@ -29,13 +29,12 @@ impl Stats {
     /// 
     /// **Returns:**
     /// * Stats vector of the session with session name
-    pub fn get_session(&mut self, session: String) -> Vec<Stat> {
-        if let Some(vector) = self.sessions.get(&session) {
-            return vector;
+    pub fn get_session(&self, session: &str) -> Result<Vec<Stat>> {
+        match self.sessions.get(session) {
+            Some(stats) => Ok(stats.clone()),
+            None => Err(Report::msg("Error getting given session")),
         }
-        return Vec::new();
     }
-*/
     
     /// Loads stats from JSON file
     /// 

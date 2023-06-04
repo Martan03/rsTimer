@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 // Statistic struct
 #[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 pub struct Stat {
     time: Duration,
     scramble: String,
