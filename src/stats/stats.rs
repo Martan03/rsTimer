@@ -6,10 +6,11 @@ use eyre::{Report, Result};
 use serde::{Deserialize, Serialize};
 
 use crate::stats::stat::Stat;
+use crate::stats::session::Session;
 
 #[derive(Serialize, Deserialize)]
 pub struct Stats {
-    sessions: HashMap<String, Vec<Stat>>,
+    sessions: HashMap<String, Session>,
 }
 
 impl Stats {
@@ -18,8 +19,13 @@ impl Stats {
     /// **Parameters:**
     /// * `stat` - stat to be added
     /// * `session` - session name
-    pub fn add(&mut self, stat: Stat, session: String) {
-        self.sessions.entry(session).or_insert(Vec::new()).push(stat);
+    pub fn add(&mut self, stat: Stat, session: &str) -> Result<()> {
+        if let Some(session) = self.sessions.get_mut(session) {
+            session.stats.push(stat);
+            Ok(())
+        } else {
+            Err(Report::msg("Error: non existing session"))
+        }
     }
 
     /// Gets session by given name
@@ -29,12 +35,14 @@ impl Stats {
     /// 
     /// **Returns:**
     /// * Stats vector of the session with session name
+    /*
     pub fn get_session(&self, session: &str) -> Result<Vec<Stat>> {
         match self.sessions.get(session) {
             Some(stats) => Ok(stats.clone()),
             None => Err(Report::msg("Error getting given session")),
         }
     }
+    */
     
     /// Loads stats from JSON file
     /// 

@@ -81,7 +81,7 @@ impl Game {
                 self.timer.get_time(),
                 self.scramble.get().to_owned(),
                 "".to_owned(),
-            ), "test".to_owned());
+            ), "test");
 
             self.scramble.generate();
             self.print_scramble();

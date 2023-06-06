@@ -1,14 +1,13 @@
 use serde::{Serialize, Deserialize};
 
 use crate::stats::stat::Stat;
-use crate::stats::stats::Stats;
 
 #[derive(Serialize, Deserialize)]
+#[derive(Clone)]
 /// Session struct
 pub struct Session {
-    name: String,
-    scramble_type: String,
-    stats: Vec<Stat>,
+    pub scramble_type: String,
+    pub stats: Vec<Stat>,
 }
 
 impl Session {
@@ -20,11 +19,14 @@ impl Session {
     /// 
     /// **Returns:**
     /// * New Session
-    pub fn new(name: String, scramble_type: String) -> Session {
+    pub fn new(scramble_type: String) -> Session {
         Session {
-            name,
             scramble_type,
             stats: Vec::new(),
         }
+    }
+
+    pub fn add(&mut self, stat: Stat) {
+        self.stats.push(stat);
     }
 }

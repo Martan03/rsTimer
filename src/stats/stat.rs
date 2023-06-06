@@ -14,7 +14,7 @@ pub struct Stat {
     datetime: DateTime<Local>,
 }
 
-// Custom date format to be able to serialize the date
+/// Custom date format to be able to serialize the date
 mod stat_date_format {
     use chrono::{DateTime, Local, TimeZone};
     use serde::{self, Deserialize, Deserializer, Serializer};
@@ -46,7 +46,15 @@ mod stat_date_format {
 }
 
 impl Stat {
-    // Stat constructor
+    /// Stat constructor
+    /// 
+    /// **Parameters:**
+    /// * `time` - duration it took to solve the cube
+    /// * `scramble` - cube scramble
+    /// * `comment` - comment to be added to this solve in stats
+    /// 
+    /// **Returns:**
+    /// * Created stat
     pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
         Stat {
             time,
