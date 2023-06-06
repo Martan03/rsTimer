@@ -1,6 +1,6 @@
 use eyre::{Report, Result};
 
-use crate::stats::stats::Stats;
+use crate::stats::{stats::Stats, stat::Stat};
 
 pub struct StatsManager {
     stats: Stats,
@@ -8,15 +8,6 @@ pub struct StatsManager {
 }
 
 impl StatsManager {
-    /// Loads stats from JSON
-    /// 
-    /// **Returns:**
-    /// * Ok() on success, else Err
-    pub fn load(&mut self) -> Result<()> {
-        self.stats = Stats::load()?;
-        Ok(())
-    }
-
     /// Loads stats and opens given session
     /// 
     /// **Parameters:**
@@ -25,7 +16,7 @@ impl StatsManager {
     /// **Returns:**
     /// * Ok() on success, else Err
     pub fn open_session(&mut self, session: &str) -> Result<()> {
-        self.load()?;
+        self.stats = Stats::load()?;
 
         if self.stats.exists(session) {
             self.session = session.to_owned();
@@ -33,5 +24,9 @@ impl StatsManager {
         } else {
             Err(Report::msg("Error: given session doesn't exist"))
         }
+    }
+
+    pub fn add_session(&mut self, session: &str) {
+        // todo
     }
 }
