@@ -1,8 +1,12 @@
-use std::env;
+use std::{env, time::Duration};
 
 use eyre::Result;
 
-use crate::{gameloop::Game, scrambles::get_scramble};
+use crate::{
+    gameloop::Game,
+    scrambles::get_scramble,
+    stats::{stat::Stat, stats::Stats},
+};
 
 mod digits;
 mod gameloop;
@@ -10,13 +14,30 @@ mod num_parser;
 mod scramble;
 mod scrambles;
 mod stats {
+    pub mod session;
     pub mod stat;
     pub mod stats;
-    pub mod session;
 }
 mod timer;
 
 fn main() -> Result<()> {
+    let mut stats = Stats::load()?;
+
+    //stats.add_session("test2", "3x3x3")?;
+
+    stats.add(
+        Stat::new(Duration::new(10, 250), "R2 U D".to_owned(), "".to_owned()),
+        "test2",
+    )?;
+
+    stats.add(
+        Stat::new(Duration::new(15, 333), "R2 U D3".to_owned(), "".to_owned()),
+        "test2",
+    )?;
+
+    stats.save()?;
+
+    return Ok(());
     // Parse arguments
     let mut scramble_type = "".to_owned();
 

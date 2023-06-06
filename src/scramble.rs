@@ -8,11 +8,11 @@ pub struct Scramble {
 
 impl Scramble {
     /// Constructs a new Scramble
-    /// 
+    ///
     /// **Parameters:**
     /// * `len` - length of the scramble
     /// * `moves` - move groups for scrambler
-    /// 
+    ///
     /// **Returns:**
     /// * Created Scramble struct
     pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Scramble {

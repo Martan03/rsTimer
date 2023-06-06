@@ -4,8 +4,7 @@ use chrono::{offset, DateTime, Local};
 use serde::{Deserialize, Serialize};
 
 // Statistic struct
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Stat {
     time: Duration,
     scramble: String,
@@ -47,12 +46,12 @@ mod stat_date_format {
 
 impl Stat {
     /// Stat constructor
-    /// 
+    ///
     /// **Parameters:**
     /// * `time` - duration it took to solve the cube
     /// * `scramble` - cube scramble
     /// * `comment` - comment to be added to this solve in stats
-    /// 
+    ///
     /// **Returns:**
     /// * Created stat
     pub fn new(time: Duration, scramble: String, comment: String) -> Stat {

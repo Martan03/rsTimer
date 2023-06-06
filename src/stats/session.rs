@@ -1,27 +1,26 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::stats::stat::Stat;
 
-#[derive(Serialize, Deserialize)]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 /// Session struct
 pub struct Session {
-    pub scramble_type: String,
-    pub stats: Vec<Stat>,
+    scramble_type: String,
+    stats: Vec<Stat>,
 }
 
 impl Session {
     /// Constructs new Session
-    /// 
+    ///
     /// **Parameters:**
     /// * `name` - session name
     /// * `scramble_type` - scramble type
-    /// 
+    ///
     /// **Returns:**
     /// * New Session
-    pub fn new(scramble_type: String) -> Session {
+    pub fn new(scramble_type: &str) -> Session {
         Session {
-            scramble_type,
+            scramble_type: scramble_type.to_owned(),
             stats: Vec::new(),
         }
     }

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::{
     scramble::Scramble,
-    stats::{stats::Stats, stat::Stat},
+    stats::{stat::Stat, stats::Stats},
     timer::Timer,
 };
 
@@ -26,11 +26,11 @@ pub struct Game {
 
 impl Game {
     /// Constructs a new Game
-    /// 
+    ///
     /// **Parameters:**
     /// * `len` - length of the scramble
     /// * `moves` - moves to make scramble of
-    /// 
+    ///
     /// **Returns:**
     /// * Constructed Game in Result
     pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Result<Game> {
@@ -43,7 +43,7 @@ impl Game {
     }
 
     /// Starts main game loop
-    /// 
+    ///
     /// **Returns:**
     /// * Ok() on success, else Err
     pub fn start_game(&mut self) -> Result<()> {
@@ -68,7 +68,7 @@ impl Game {
     }
 
     /// Listens to key presses
-    /// 
+    ///
     /// **Returns:**
     /// * Ok() on success, else Err
     fn key_listener(&mut self) -> Result<()> {
@@ -77,11 +77,14 @@ impl Game {
         // Starts timer when Space pressed
         if event == Event::Key(KeyCode::Char(' ').into()) {
             self.timer.start_timer()?;
-            self.stats.add(Stat::new(
-                self.timer.get_time(),
-                self.scramble.get().to_owned(),
-                "".to_owned(),
-            ), "test");
+            self.stats.add(
+                Stat::new(
+                    self.timer.get_time(),
+                    self.scramble.get().to_owned(),
+                    "".to_owned(),
+                ),
+                "test",
+            )?;
 
             self.scramble.generate();
             self.print_scramble();

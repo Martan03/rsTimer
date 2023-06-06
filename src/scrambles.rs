@@ -1,10 +1,10 @@
 use std::vec;
 
 /// Gets scramble length and scramble moves
-/// 
+///
 /// **Parameters:**
 /// * `scramble_type` - type of scramble (eg. 3x3x3)
-/// 
+///
 /// **Returns:**
 /// * Tupple consisting of scramble size and moves vector
 pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
@@ -17,7 +17,7 @@ pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
 }
 
 /// Gets move groups for 2x2x2 scramble
-/// 
+///
 /// **Returns:**
 /// * Move groups vector
 fn get_2x2x2() -> Vec<Vec<&'static str>> {
@@ -29,7 +29,7 @@ fn get_2x2x2() -> Vec<Vec<&'static str>> {
 }
 
 /// Gets move grouops for 3x3x3 scramble
-/// 
+///
 /// **Returns:**
 /// * Move groups vector
 fn get_3x3x3() -> Vec<Vec<&'static str>> {
@@ -44,7 +44,7 @@ fn get_3x3x3() -> Vec<Vec<&'static str>> {
 }
 
 /// Gets move groups for 4x4x4 scramble
-/// 
+///
 /// **Returns:**
 /// * Move groups vector
 fn get_4x4x4() -> Vec<Vec<&'static str>> {
