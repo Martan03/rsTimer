@@ -33,7 +33,7 @@ impl Stats {
         session: &str,
         scramble_type: &str,
     ) -> Result<()> {
-        if self.sessions.contains_key(session) {
+        if self.exists(session) {
             Err(Report::msg("Error: session with this name already exists"))
         } else {
             self.sessions
@@ -89,6 +89,10 @@ impl Stats {
         std::fs::write(&path, text)?;
 
         Ok(())
+    }
+
+    pub fn exists(&self, session: &str) -> bool {
+        self.sessions.contains_key(session)
     }
 
     /// Gets the directory to save stats in

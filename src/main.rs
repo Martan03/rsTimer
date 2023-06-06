@@ -8,6 +8,7 @@ use crate::{
     stats::{stat::Stat, stats::Stats},
 };
 
+mod stats_manager;
 mod digits;
 mod gameloop;
 mod num_parser;
