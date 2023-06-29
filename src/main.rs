@@ -1,4 +1,4 @@
-use std::{env, time::Duration};
+use std::{env, time::Duration, io::{stdin, stdout, Write}};
 
 use eyre::Result;
 
@@ -22,28 +22,16 @@ mod stats {
 mod timer;
 
 fn main() -> Result<()> {
-    let mut stats = Stats::load()?;
-
-    //stats.add_session("test2", "3x3x3")?;
-
-    stats.add(
-        Stat::new(Duration::new(10, 250), "R2 U D".to_owned(), "".to_owned()),
-        "test2",
-    )?;
-
-    stats.add(
-        Stat::new(Duration::new(15, 333), "R2 U D3".to_owned(), "".to_owned()),
-        "test2",
-    )?;
-
-    stats.save()?;
-
-    return Ok(());
     // Parse arguments
     let mut scramble_type = "".to_owned();
 
     for arg in env::args().skip(1) {
         match arg.as_str() {
+            "-a" => add_session()?,
+            "-l" => {
+                list_sessions()?;
+                return Ok(());
+            },
             "-h" => help(),
             _ => {
                 // Invalid usage if scramble type already specified
@@ -76,6 +64,37 @@ fn main() -> Result<()> {
 
     // Restores screen
     print!("\x1b[?1049l\x1b[?25h");
+
+    Ok(())
+}
+
+/// Add session prompt
+fn add_session() -> Result<()> {
+    println!("Adding session. Please fill out the prompt.");
+    print!("Session name: ");
+    stdout().flush()?;
+    let mut name = String::new();
+    stdin().read_line(&mut name)?;
+
+    print!("Scramble type: ");
+    stdout().flush()?;
+    let mut scramble_type = String::new();
+    stdin().read_line(&mut scramble_type)?;
+
+    let mut stats = Stats::load()?;
+    stats.add_session(&name.trim(), &scramble_type.trim())?;
+
+    stats.save()?;
+
+    Ok(())
+}
+
+/// Lists all sessions
+fn list_sessions() -> Result<()> {
+    let stats = Stats::load()?;
+    for session in stats.get_sessions() {
+        println!("{session}");
+    }
 
     Ok(())
 }

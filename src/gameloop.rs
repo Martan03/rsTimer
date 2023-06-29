@@ -83,7 +83,7 @@ impl Game {
                     self.scramble.get().to_owned(),
                     "".to_owned(),
                 ),
-                "test",
+                "test2",
             )?;
 
             self.scramble.generate();

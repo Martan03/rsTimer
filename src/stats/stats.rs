@@ -95,6 +95,11 @@ impl Stats {
         self.sessions.contains_key(session)
     }
 
+    pub fn get_sessions(&self) -> Vec<String> {
+        let keys: Vec<_> = self.sessions.keys().cloned().collect();
+        return keys;
+    }
+
     /// Gets the directory to save stats in
     ///
     /// **Returns:**
