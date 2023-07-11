@@ -1,8 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    scramble::Scramble,
-    stats::{stat::Stat, stats::Stats},
+    stats::stat::Stat,
     stats_manager::StatsManager,
     timer::Timer,
 };
@@ -21,15 +20,14 @@ mod num_parser;
 pub struct Game {
     timer: Timer,
     con: bool,
-    stats_manager: StatsManager
+    stats_manager: StatsManager,
 }
 
 impl Game {
     /// Constructs a new Game
     ///
     /// **Parameters:**
-    /// * `len` - length of the scramble
-    /// * `moves` - moves to make scramble of
+    /// * `stats_manager` - struct for stats managing
     ///
     /// **Returns:**
     /// * Constructed Game in Result
@@ -37,7 +35,7 @@ impl Game {
         Ok(Game {
             timer: Timer::new(3),
             con: false,
-            stats_manager
+            stats_manager,
         })
     }
 
@@ -51,7 +49,7 @@ impl Game {
         self.con = true;
 
         // Generates scramble
-        self.scramble.generate();
+        self.stats_manager.scramble.generate();
         self.print_scramble();
 
         print_time(get_time(0.0, 3));
@@ -76,16 +74,16 @@ impl Game {
         // Starts timer when Space pressed
         if event == Event::Key(KeyCode::Char(' ').into()) {
             self.timer.start_timer()?;
-            self.stats.add(
+            self.stats_manager.stats.add(
                 Stat::new(
                     self.timer.get_time(),
-                    self.scramble.get().to_owned(),
+                    self.stats_manager.scramble.get().to_owned(),
                     "".to_owned(),
                 ),
-                "test2",
+                &self.stats_manager.session,
             )?;
 
-            self.scramble.generate();
+            self.stats_manager.scramble.generate();
             self.print_scramble();
         }
         // Opens statistics
@@ -95,7 +93,7 @@ impl Game {
         }
         // Ends game loop when ESC pressed
         if event == Event::Key(KeyCode::Esc.into()) {
-            self.stats.save()?;
+            self.stats_manager.stats.save()?;
             self.con = false;
         }
         Ok(())
@@ -111,8 +109,8 @@ impl Game {
     /// Prints scramble
     fn print_scramble(&mut self) {
         let (w, _) = termion::terminal_size().unwrap();
-        let px = (w as usize - self.scramble.get().len()) / 2;
+        let px = (w as usize - self.stats_manager.scramble.get().len()) / 2;
 
-        println!("\x1b[1;{px}H\x1b[0m{}", self.scramble.get());
+        println!("\x1b[1;{px}H\x1b[0m{}", self.stats_manager.scramble.get());
     }
 }

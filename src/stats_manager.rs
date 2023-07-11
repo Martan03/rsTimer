@@ -1,15 +1,13 @@
 use eyre::{Report, Result};
 
 use crate::{
-    scramble::Scramble,
-    scrambles::get_scramble,
-    stats::{stat::Stat, stats::Stats},
+    scramble::Scramble, scrambles::get_scramble, stats::stats::Stats,
 };
 
 pub struct StatsManager {
-    stats: Stats,
-    session: String,
-    scramble: Scramble,
+    pub stats: Stats,
+    pub session: String,
+    pub scramble: Scramble,
 }
 
 impl StatsManager {
@@ -39,9 +37,5 @@ impl StatsManager {
         }
 
         Err(Report::msg("Error: scramble type not found"))
-    }
-
-    pub fn add_session(&mut self, session: &str) {
-        // todo
     }
 }

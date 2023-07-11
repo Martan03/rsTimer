@@ -6,9 +6,7 @@ use std::{
 use eyre::Result;
 
 use crate::{
-    gameloop::Game,
-    stats::stats::Stats,
-    stats_manager::StatsManager,
+    gameloop::Game, stats::stats::Stats, stats_manager::StatsManager,
 };
 
 mod digits;
@@ -58,7 +56,7 @@ fn main() -> Result<()> {
         std::process::exit(1);
     }
 
-    let mut stats_manager = StatsManager::open_session(&session)?;
+    let stats_manager = StatsManager::open_session(&session)?;
 
     // Saves screen, clears screen and hides cursor
     print!("\x1b[?1049h\x1b[2J\x1b[?25l");
