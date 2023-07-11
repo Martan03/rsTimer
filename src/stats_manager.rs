@@ -1,7 +1,11 @@
+use std::time::Duration;
+
 use eyre::{Report, Result};
 
 use crate::{
-    scramble::Scramble, scrambles::get_scramble, stats::stats::Stats,
+    scramble::Scramble,
+    scrambles::get_scramble,
+    stats::{stat::Stat, stats::Stats},
 };
 
 pub struct StatsManager {
@@ -17,7 +21,7 @@ impl StatsManager {
     /// * `session` - name of the session to be opened
     ///
     /// **Returns:**
-    /// * Ok() on success, else Err
+    /// * Ok() on success, else Err()
     pub fn open_session(name: &str) -> Result<StatsManager> {
         let stats = Stats::load()?;
 
@@ -37,5 +41,20 @@ impl StatsManager {
         }
 
         Err(Report::msg("Error: scramble type not found"))
+    }
+
+    /// Adds time to active session
+    ///
+    /// **Parameters:**
+    /// * `time` - time it took to solve the cube
+    ///
+    /// **Returns:**
+    /// * Ok() on success, else Err()
+    pub fn add_time(&mut self, time: Duration) -> Result<()> {
+        self.stats.add(
+            Stat::new(time, self.scramble.get().to_owned(), "".to_owned()),
+            &self.session,
+        )?;
+        Ok(())
     }
 }

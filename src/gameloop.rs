@@ -1,10 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    stats::stat::Stat,
-    stats_manager::StatsManager,
-    timer::Timer,
-};
+use crate::{stats_manager::StatsManager, timer::Timer};
 
 use crossterm::{
     event::{poll, read, Event, KeyCode},
@@ -74,14 +70,7 @@ impl Game {
         // Starts timer when Space pressed
         if event == Event::Key(KeyCode::Char(' ').into()) {
             self.timer.start_timer()?;
-            self.stats_manager.stats.add(
-                Stat::new(
-                    self.timer.get_time(),
-                    self.stats_manager.scramble.get().to_owned(),
-                    "".to_owned(),
-                ),
-                &self.stats_manager.session,
-            )?;
+            self.stats_manager.add_time(self.timer.get_time())?;
 
             self.stats_manager.scramble.generate();
             self.print_scramble();
