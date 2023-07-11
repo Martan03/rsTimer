@@ -1,15 +1,14 @@
 use std::{
     env,
     io::{stdin, stdout, Write},
-    time::Duration,
 };
 
 use eyre::Result;
 
 use crate::{
     gameloop::Game,
-    scrambles::get_scramble,
-    stats::{stat::Stat, stats::Stats},
+    stats::stats::Stats,
+    stats_manager::StatsManager,
 };
 
 mod digits;
@@ -27,11 +26,14 @@ mod timer;
 
 fn main() -> Result<()> {
     // Parse arguments
-    let mut scramble_type = "".to_owned();
+    let mut session = "".to_owned();
 
     for arg in env::args().skip(1) {
         match arg.as_str() {
-            "-a" => add_session()?,
+            "-a" => {
+                add_session()?;
+                return Ok(());
+            }
             "-l" => {
                 list_sessions()?;
                 return Ok(());
@@ -42,31 +44,27 @@ fn main() -> Result<()> {
             }
             _ => {
                 // Invalid usage if scramble type already specified
-                if scramble_type != "".to_owned() {
+                if session != "".to_owned() {
                     invalid_usage("multiple scramble types");
                     std::process::exit(1);
                 }
-                scramble_type = arg;
+                session = arg;
             }
         }
     }
-    // Sets default scramble type 3x3x3
-    if scramble_type == "".to_owned() {
-        scramble_type = "3x3x3".to_owned();
-    }
 
-    // Checks if scramble type exists
-    let (len, moves) = get_scramble(&scramble_type);
-    if len == 0 {
-        invalid_usage("non-existing scramble type");
+    if session == "".to_owned() {
+        invalid_usage("session name must be specified");
         std::process::exit(1);
     }
+
+    let mut stats_manager = StatsManager::open_session(&session)?;
 
     // Saves screen, clears screen and hides cursor
     print!("\x1b[?1049h\x1b[2J\x1b[?25l");
 
     // Start the app
-    let mut game = Game::new(len, moves)?;
+    let mut game = Game::new(stats_manager)?;
     game.start_game()?;
 
     // Restores screen

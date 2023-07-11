@@ -1,10 +1,15 @@
 use eyre::{Report, Result};
 
-use crate::stats::{stat::Stat, stats::Stats};
+use crate::{
+    scramble::Scramble,
+    scrambles::get_scramble,
+    stats::{stat::Stat, stats::Stats},
+};
 
 pub struct StatsManager {
     stats: Stats,
     session: String,
+    scramble: Scramble,
 }
 
 impl StatsManager {
@@ -15,15 +20,25 @@ impl StatsManager {
     ///
     /// **Returns:**
     /// * Ok() on success, else Err
-    pub fn open_session(&mut self, session: &str) -> Result<()> {
-        self.stats = Stats::load()?;
+    pub fn open_session(name: &str) -> Result<StatsManager> {
+        let stats = Stats::load()?;
 
-        if self.stats.exists(session) {
-            self.session = session.to_owned();
-            Ok(())
-        } else {
-            Err(Report::msg("Error: given session doesn't exist"))
+        if !stats.exists(name) {
+            return Err(Report::msg("Error: given session doesn't exist"));
         }
+
+        if let Some(session) = stats.sessions.get(name) {
+            let (scramble_length, scramble_moves) =
+                get_scramble(&session.scramble_type);
+
+            return Ok(StatsManager {
+                stats: stats,
+                session: name.to_owned(),
+                scramble: Scramble::new(scramble_length, scramble_moves),
+            });
+        }
+
+        Err(Report::msg("Error: scramble type not found"))
     }
 
     pub fn add_session(&mut self, session: &str) {

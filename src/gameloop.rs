@@ -3,6 +3,7 @@ use std::time::Duration;
 use crate::{
     scramble::Scramble,
     stats::{stat::Stat, stats::Stats},
+    stats_manager::StatsManager,
     timer::Timer,
 };
 
@@ -20,8 +21,7 @@ mod num_parser;
 pub struct Game {
     timer: Timer,
     con: bool,
-    scramble: Scramble,
-    stats: Stats,
+    stats_manager: StatsManager
 }
 
 impl Game {
@@ -33,12 +33,11 @@ impl Game {
     ///
     /// **Returns:**
     /// * Constructed Game in Result
-    pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Result<Game> {
+    pub fn new(stats_manager: StatsManager) -> Result<Game> {
         Ok(Game {
             timer: Timer::new(3),
             con: false,
-            scramble: Scramble::new(len, moves),
-            stats: Stats::load()?,
+            stats_manager
         })
     }
 

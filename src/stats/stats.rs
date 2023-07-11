@@ -10,7 +10,7 @@ use crate::stats::stat::Stat;
 
 #[derive(Serialize, Deserialize)]
 pub struct Stats {
-    sessions: HashMap<String, Session>,
+    pub sessions: HashMap<String, Session>,
 }
 
 impl Stats {
@@ -97,13 +97,13 @@ impl Stats {
 
     pub fn print_sessions(&self) {
         println!("\x1b[92mSessions:");
-        
+
         let keys: Vec<_> = self.sessions.keys().cloned().collect();
         for key in keys {
             print!("  \x1b[93m{key}\x1b[0m (scramble type: ");
             match self.sessions.get(&key) {
                 Some(session) => println!("{})", session.scramble_type),
-                None => println!("Unknown)")
+                None => println!("Unknown)"),
             }
         }
     }
