@@ -99,11 +99,7 @@ fn add_session() -> Result<()> {
 /// Lists all sessions
 fn list_sessions() -> Result<()> {
     let stats = Stats::load()?;
-
-    
-    for session in stats.get_sessions() {
-        println!("{session}");
-    }
+    stats.print_sessions();
 
     Ok(())
 }

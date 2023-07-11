@@ -95,9 +95,17 @@ impl Stats {
         self.sessions.contains_key(session)
     }
 
-    pub fn get_sessions(&self) -> Vec<String> {
+    pub fn print_sessions(&self) {
+        println!("\x1b[92mSessions:");
+        
         let keys: Vec<_> = self.sessions.keys().cloned().collect();
-        return keys;
+        for key in keys {
+            print!("  \x1b[93m{key}\x1b[0m (scramble type: ");
+            match self.sessions.get(&key) {
+                Some(session) => println!("{})", session.scramble_type),
+                None => println!("Unknown)")
+            }
+        }
     }
 
     /// Gets the directory to save stats in

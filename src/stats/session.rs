@@ -5,7 +5,7 @@ use crate::stats::stat::Stat;
 #[derive(Serialize, Deserialize, Clone)]
 /// Session struct
 pub struct Session {
-    scramble_type: String,
+    pub scramble_type: String,
     stats: Vec<Stat>,
 }
 
