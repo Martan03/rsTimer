@@ -1,4 +1,8 @@
-use std::{env, time::Duration, io::{stdin, stdout, Write}};
+use std::{
+    env,
+    io::{stdin, stdout, Write},
+    time::Duration,
+};
 
 use eyre::Result;
 
@@ -8,12 +12,12 @@ use crate::{
     stats::{stat::Stat, stats::Stats},
 };
 
-mod stats_manager;
 mod digits;
 mod gameloop;
 mod num_parser;
 mod scramble;
 mod scrambles;
+mod stats_manager;
 mod stats {
     pub mod session;
     pub mod stat;
@@ -31,8 +35,11 @@ fn main() -> Result<()> {
             "-l" => {
                 list_sessions()?;
                 return Ok(());
-            },
-            "-h" => help(),
+            }
+            "-h" => {
+                help();
+                return Ok(());
+            }
             _ => {
                 // Invalid usage if scramble type already specified
                 if scramble_type != "".to_owned() {
@@ -92,6 +99,8 @@ fn add_session() -> Result<()> {
 /// Lists all sessions
 fn list_sessions() -> Result<()> {
     let stats = Stats::load()?;
+
+    
     for session in stats.get_sessions() {
         println!("{session}");
     }
@@ -101,7 +110,27 @@ fn list_sessions() -> Result<()> {
 
 /// Displays help
 fn help() {
-    println!("Help not implemented yet");
+    print!("Welcome to help for \x1b[92mrsTimer\x1b[0m by ");
+    // Prints name with color gradient
+    let name = "Martan03";
+    let r = 0;
+    let g = 220;
+    for i in 0..name.len() {
+        print!(
+            "\x1b[38;2;{};{};255m{}",
+            r + i * 25,
+            g - i * 20,
+            name.chars().nth(i).unwrap()
+        );
+    }
+    println!("\n\n\x1b[92mUsage: \x1b[97mrstimer \x1b[90m[flags]\n");
+    println!("\x1b[92mFlags:\n\x1b[0m");
+    println!("\x1b[93m  -h --help");
+    println!("\x1b[0m    Displays help\n");
+    println!("\x1b[93m  -l");
+    println!("\x1b[0m    Lists all sessions\n");
+    println!("\x1b[93m  -a");
+    println!("\x1b[0m    Opens dialog to add session\n");
 }
 
 /// Prints invalid usage message
