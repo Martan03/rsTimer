@@ -57,4 +57,23 @@ impl StatsManager {
         )?;
         Ok(())
     }
+
+    pub fn display_stats(&self) {
+        println!("\x1b[0m\x1b[2J\x1b[HStats:");
+        println!("\x1b[0Gtest");
+        for i in 0..self.stats.sessions[&self.session].stats.len() {
+            println!("\x1b[0G{}", self.stats.sessions[&self.session].stats[i].time.as_secs_f64());
+        }
+    }
+
+    pub fn display_sessions(&self) {
+        println!("\x1b[2J\x1b[92mSessions:");
+
+        for (key, value) in self.stats.sessions.iter() {
+            println!(
+                "  \x1b[93m{key}\x1b[0m (scramble type: {})",
+                value.scramble_type
+            );
+        }
+    }
 }

@@ -75,10 +75,12 @@ impl Game {
             self.stats_manager.scramble.generate();
             self.print_scramble();
         }
+        if event == Event::Key(KeyCode::Char('s').into()) {
+            self.stats_manager.display_sessions();
+        }
         // Opens statistics
         if event == Event::Key(KeyCode::Tab.into()) {
-            //self.stats.display()?;
-            self.print_screen();
+            self.stats_manager.display_stats();
         }
         // Ends game loop when ESC pressed
         if event == Event::Key(KeyCode::Esc.into()) {

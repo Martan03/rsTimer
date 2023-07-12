@@ -86,6 +86,14 @@
         }
       ]
     },
+    "2x2x2": {
+      "scramble_type": "2x2x2",
+      "stats": []
+    },
+    "5x5x5": {
+      "scramble_type": "2x2x2",
+      "stats": []
+    },
     "4x4x4": {
       "scramble_type": "4x4x4",
       "stats": [
@@ -117,14 +125,6 @@
           "datetime": "2023-07-11 23:25:05"
         }
       ]
-    },
-    "5x5x5": {
-      "scramble_type": "2x2x2",
-      "stats": []
-    },
-    "2x2x2": {
-      "scramble_type": "2x2x2",
-      "stats": []
     }
   }
 }

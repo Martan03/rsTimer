@@ -1,6 +1,6 @@
 # rsTimer
 
-Comand line application for timing you Rubik's cube solves.
+Command line application for timing you Rubik's cube solves.
 
 ## Sessions
 

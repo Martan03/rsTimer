@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 // Statistic struct
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Stat {
-    time: Duration,
+    pub time: Duration,
     scramble: String,
     comment: String,
     #[serde(with = "stat_date_format")]

@@ -6,7 +6,7 @@ use crate::stats::stat::Stat;
 /// Session struct
 pub struct Session {
     pub scramble_type: String,
-    stats: Vec<Stat>,
+    pub stats: Vec<Stat>,
 }
 
 impl Session {
