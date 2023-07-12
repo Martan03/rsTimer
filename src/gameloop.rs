@@ -46,9 +46,8 @@ impl Game {
 
         // Generates scramble
         self.stats_manager.scramble.generate();
-        self.print_scramble();
-
-        print_time(get_time(0.0, 3));
+        
+        self.print_screen();
 
         // Game loop
         while self.con {
@@ -80,7 +79,8 @@ impl Game {
         }
         // Opens statistics
         if event == Event::Key(KeyCode::Tab.into()) {
-            self.stats_manager.display_stats();
+            self.stats_manager.open_stats()?;
+            self.print_screen();
         }
         // Ends game loop when ESC pressed
         if event == Event::Key(KeyCode::Esc.into()) {

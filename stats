@@ -1,5 +1,45 @@
 {
   "sessions": {
+    "5x5x5": {
+      "scramble_type": "2x2x2",
+      "stats": []
+    },
+    "4x4x4": {
+      "scramble_type": "4x4x4",
+      "stats": [
+        {
+          "time": {
+            "secs": 13,
+            "nanos": 453759418
+          },
+          "scramble": "U2 Fw2 B Fw' L' Uw R L R D2 Fw' D' L U2 D2 B L Fw' L' D' Uw R' F2 D' Rw D L' B2 F' R2 D Rw' D B' Rw' D' B U' F' B' Fw2 L D'",
+          "comment": "",
+          "datetime": "2023-07-11 23:05:24"
+        },
+        {
+          "time": {
+            "secs": 29,
+            "nanos": 919818685
+          },
+          "scramble": "Uw' Rw' F D' Uw' D2 Uw B R L2 U2 Rw2 D B2 R' D' U' F U Fw' B2 L2 D2 Rw' D Fw L2 F' U Rw' Fw Rw B2 L Uw2 B' L D' U2 L2 D2 B' Uw",
+          "comment": "",
+          "datetime": "2023-07-11 23:23:54"
+        },
+        {
+          "time": {
+            "secs": 0,
+            "nanos": 432170837
+          },
+          "scramble": "Rw2 L2 D' Fw2 U2 D' B2 L2 Uw' L D' R2 B' D2 L2 R D2 L B Rw2 U2 F U2 Fw' Uw' L2 B Fw2 Rw' Fw B2 Fw' U F' D' F R F' L F' Uw2 F Rw2",
+          "comment": "",
+          "datetime": "2023-07-11 23:25:05"
+        }
+      ]
+    },
+    "2x2x2": {
+      "scramble_type": "2x2x2",
+      "stats": []
+    },
     "test2": {
       "scramble_type": "3x3x3",
       "stats": [
@@ -83,46 +123,6 @@
           "scramble": "F2 R2 B2 U' D' L2 D2 U' R2 D' B' F' L2 F2 B2 D R2 U' D' B2 R'",
           "comment": "",
           "datetime": "2023-07-11 23:04:50"
-        }
-      ]
-    },
-    "2x2x2": {
-      "scramble_type": "2x2x2",
-      "stats": []
-    },
-    "5x5x5": {
-      "scramble_type": "2x2x2",
-      "stats": []
-    },
-    "4x4x4": {
-      "scramble_type": "4x4x4",
-      "stats": [
-        {
-          "time": {
-            "secs": 13,
-            "nanos": 453759418
-          },
-          "scramble": "U2 Fw2 B Fw' L' Uw R L R D2 Fw' D' L U2 D2 B L Fw' L' D' Uw R' F2 D' Rw D L' B2 F' R2 D Rw' D B' Rw' D' B U' F' B' Fw2 L D'",
-          "comment": "",
-          "datetime": "2023-07-11 23:05:24"
-        },
-        {
-          "time": {
-            "secs": 29,
-            "nanos": 919818685
-          },
-          "scramble": "Uw' Rw' F D' Uw' D2 Uw B R L2 U2 Rw2 D B2 R' D' U' F U Fw' B2 L2 D2 Rw' D Fw L2 F' U Rw' Fw Rw B2 L Uw2 B' L D' U2 L2 D2 B' Uw",
-          "comment": "",
-          "datetime": "2023-07-11 23:23:54"
-        },
-        {
-          "time": {
-            "secs": 0,
-            "nanos": 432170837
-          },
-          "scramble": "Rw2 L2 D' Fw2 U2 D' B2 L2 Uw' L D' R2 B' D2 L2 R D2 L B Rw2 U2 F U2 Fw' Uw' L2 B Fw2 Rw' Fw B2 Fw' U F' D' F R F' L F' Uw2 F Rw2",
-          "comment": "",
-          "datetime": "2023-07-11 23:25:05"
         }
       ]
     }

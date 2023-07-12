@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use crossterm::event::{poll, read, Event, KeyCode};
 use eyre::{Report, Result};
 
 use crate::{
@@ -58,12 +59,42 @@ impl StatsManager {
         Ok(())
     }
 
-    pub fn display_stats(&self) {
-        println!("\x1b[0m\x1b[2J\x1b[HStats:");
-        println!("\x1b[0Gtest");
-        for i in 0..self.stats.sessions[&self.session].stats.len() {
-            println!("\x1b[0G{}", self.stats.sessions[&self.session].stats[i].time.as_secs_f64());
+    /// Opens stats window
+    /// 
+    /// **Returns:**
+    /// Ok() on success, else Err()
+    pub fn open_stats(&self) -> Result<()> {
+        self.display_stats();
+
+        while self.stats_key_listener()? {
+            // Empty loop body
         }
+
+        Ok(())
+    }
+
+    /// Displays stats of active session
+    fn display_stats(&self) {
+        println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
+
+        for stat in self.stats.sessions[&self.session].stats.iter() {
+            println!("\x1b[0G{}", stat.time.as_secs_f64());
+        }
+    }
+
+    /// Listens to key presses and reacts to it while stats window is active
+    /// 
+    /// **Returns:**
+    /// Ok(bool) on success - false to close stats - else Err()
+    fn stats_key_listener(&self) -> Result<bool> {
+        if poll(Duration::from_millis(100))? {
+            let event = read()?;
+
+            if event == Event::Key(KeyCode::Tab.into()) {
+                return Ok(false);
+            }
+        }
+        return Ok(true);
     }
 
     pub fn display_sessions(&self) {
