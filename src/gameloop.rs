@@ -75,7 +75,7 @@ impl Game {
             self.print_scramble();
         }
         if event == Event::Key(KeyCode::Char('s').into()) {
-            self.stats_manager.display_sessions();
+            self.stats_manager.open_session_list();
         }
         // Opens statistics
         if event == Event::Key(KeyCode::Tab.into()) {

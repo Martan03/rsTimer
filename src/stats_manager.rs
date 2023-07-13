@@ -127,7 +127,11 @@ impl StatsManager {
         return Ok(true);
     }
 
-    pub fn display_sessions(&self) {
+    pub fn open_session_list(&self) {
+        self.display_sessions();
+    }
+
+    fn display_sessions(&self) {
         println!("\x1b[2J\x1b[92mSessions:");
 
         for (key, value) in self.stats.sessions.iter() {
