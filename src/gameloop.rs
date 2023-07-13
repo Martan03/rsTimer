@@ -79,7 +79,10 @@ impl Game {
         }
         // Opens statistics
         if event == Event::Key(KeyCode::Tab.into()) {
-            self.stats_manager.open_stats()?;
+            if self.stats_manager.open_stats()? {
+                self.con = false;
+                self.stats_manager.stats.save()?;
+            }
             self.print_screen();
         }
         // Ends game loop when ESC pressed

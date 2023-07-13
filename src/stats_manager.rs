@@ -62,19 +62,24 @@ impl StatsManager {
     /// Opens stats window
     ///
     /// **Returns:**
-    /// Ok() on success, else Err()
-    pub fn open_stats(&self) -> Result<()> {
+    /// Ok(bool) on success - true to exit app - else Err()
+    pub fn open_stats(&self) -> Result<bool> {
         let mut active_stat: usize = 0;
+        let mut exit = false;
+
         self.display_stats(active_stat);
 
-        while self.stats_key_listener(&mut active_stat)? {
+        while self.stats_key_listener(&mut active_stat, &mut exit)? {
             // Empty loop body
         }
 
-        Ok(())
+        Ok(exit)
     }
 
     /// Displays stats of active session
+    /// 
+    /// **Parameters:**
+    /// * `active_stat` - number of active stat to be highlighted
     fn display_stats(&self, active_stat: usize) {
         println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
 
@@ -90,9 +95,13 @@ impl StatsManager {
 
     /// Listens to key presses and reacts to it while stats window is active
     ///
+    /// **Parameters:**
+    /// * `active_stat` - number of active stat to be highlighted
+    /// * `exit` - when true, app will be exited
+    /// 
     /// **Returns:**
     /// Ok(bool) on success - false to close stats - else Err()
-    fn stats_key_listener(&self, active_stat: &mut usize) -> Result<bool> {
+    fn stats_key_listener(&self, active_stat: &mut usize, exit: &mut bool) -> Result<bool> {
         if poll(Duration::from_millis(100))? {
             let event = read()?;
 
@@ -109,6 +118,10 @@ impl StatsManager {
             if event == Event::Key(KeyCode::Up.into()) && *active_stat > 0 {
                 *active_stat -= 1;
                 self.display_stats(*active_stat);
+            }
+            if event == Event::Key(KeyCode::Esc.into()) {
+                *exit = true;
+                return Ok(false);
             }
         }
         return Ok(true);
