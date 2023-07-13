@@ -65,9 +65,9 @@ impl StatsManager {
     /// Ok() on success, else Err()
     pub fn open_stats(&self) -> Result<()> {
         let mut active_stat: usize = 0;
-        self.display_stats(&mut active_stat);
+        self.display_stats(active_stat);
 
-        while self.stats_key_listener()? {
+        while self.stats_key_listener(&mut active_stat)? {
             // Empty loop body
         }
 
@@ -75,16 +75,16 @@ impl StatsManager {
     }
 
     /// Displays stats of active session
-    fn display_stats(&self, active_stat: &mut usize) {
+    fn display_stats(&self, active_stat: usize) {
         println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
 
         for (i, stat) in
             self.stats.sessions[&self.session].stats.iter().enumerate()
         {
-            if *active_stat == i {
+            if active_stat == i {
                 print!("\x1b[093m");
             }
-            println!("\x1b[0G{}\x1b[0m", stat.time.as_secs_f64());
+            println!("\x1b[0G{:.3}\x1b[0m", stat.time.as_secs_f64());
         }
     }
 
@@ -92,12 +92,23 @@ impl StatsManager {
     ///
     /// **Returns:**
     /// Ok(bool) on success - false to close stats - else Err()
-    fn stats_key_listener(&self) -> Result<bool> {
+    fn stats_key_listener(&self, active_stat: &mut usize) -> Result<bool> {
         if poll(Duration::from_millis(100))? {
             let event = read()?;
 
             if event == Event::Key(KeyCode::Tab.into()) {
                 return Ok(false);
+            }
+            if event == Event::Key(KeyCode::Down.into())
+                && *active_stat
+                    < self.stats.sessions[&self.session].stats.len() - 1
+            {
+                *active_stat += 1;
+                self.display_stats(*active_stat);
+            }
+            if event == Event::Key(KeyCode::Up.into()) && *active_stat > 0 {
+                *active_stat -= 1;
+                self.display_stats(*active_stat);
             }
         }
         return Ok(true);
