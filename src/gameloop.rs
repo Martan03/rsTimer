@@ -46,7 +46,7 @@ impl Game {
 
         // Generates scramble
         self.stats_manager.scramble.generate();
-        
+
         self.print_screen();
 
         // Game loop

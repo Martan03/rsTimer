@@ -60,11 +60,12 @@ impl StatsManager {
     }
 
     /// Opens stats window
-    /// 
+    ///
     /// **Returns:**
     /// Ok() on success, else Err()
     pub fn open_stats(&self) -> Result<()> {
-        self.display_stats();
+        let mut active_stat: usize = 0;
+        self.display_stats(&mut active_stat);
 
         while self.stats_key_listener()? {
             // Empty loop body
@@ -74,16 +75,21 @@ impl StatsManager {
     }
 
     /// Displays stats of active session
-    fn display_stats(&self) {
+    fn display_stats(&self, active_stat: &mut usize) {
         println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
 
-        for stat in self.stats.sessions[&self.session].stats.iter() {
-            println!("\x1b[0G{}", stat.time.as_secs_f64());
+        for (i, stat) in
+            self.stats.sessions[&self.session].stats.iter().enumerate()
+        {
+            if *active_stat == i {
+                print!("\x1b[093m");
+            }
+            println!("\x1b[0G{}\x1b[0m", stat.time.as_secs_f64());
         }
     }
 
     /// Listens to key presses and reacts to it while stats window is active
-    /// 
+    ///
     /// **Returns:**
     /// Ok(bool) on success - false to close stats - else Err()
     fn stats_key_listener(&self) -> Result<bool> {
