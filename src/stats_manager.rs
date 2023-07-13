@@ -69,7 +69,11 @@ impl StatsManager {
 
         self.display_stats(active_stat);
 
-        while self.stats_key_listener(&mut active_stat, &mut exit)? {
+        while self.stats_key_listener(
+            &mut active_stat,
+            self.stats.sessions[&self.session].stats.len(),
+            &mut exit,
+        )? {
             // Empty loop body
         }
 
@@ -77,7 +81,7 @@ impl StatsManager {
     }
 
     /// Displays stats of active session
-    /// 
+    ///
     /// **Parameters:**
     /// * `active_stat` - number of active stat to be highlighted
     fn display_stats(&self, active_stat: usize) {
@@ -93,40 +97,6 @@ impl StatsManager {
         }
     }
 
-    /// Listens to key presses and reacts to it while stats window is active
-    ///
-    /// **Parameters:**
-    /// * `active_stat` - number of active stat to be highlighted
-    /// * `exit` - when true, app will be exited
-    /// 
-    /// **Returns:**
-    /// Ok(bool) on success - false to close stats - else Err()
-    fn stats_key_listener(&self, active_stat: &mut usize, exit: &mut bool) -> Result<bool> {
-        if poll(Duration::from_millis(100))? {
-            let event = read()?;
-
-            if event == Event::Key(KeyCode::Tab.into()) {
-                return Ok(false);
-            }
-            if event == Event::Key(KeyCode::Down.into())
-                && *active_stat
-                    < self.stats.sessions[&self.session].stats.len() - 1
-            {
-                *active_stat += 1;
-                self.display_stats(*active_stat);
-            }
-            if event == Event::Key(KeyCode::Up.into()) && *active_stat > 0 {
-                *active_stat -= 1;
-                self.display_stats(*active_stat);
-            }
-            if event == Event::Key(KeyCode::Esc.into()) {
-                *exit = true;
-                return Ok(false);
-            }
-        }
-        return Ok(true);
-    }
-
     pub fn open_session_list(&self) {
         self.display_sessions();
     }
@@ -140,5 +110,43 @@ impl StatsManager {
                 value.scramble_type
             );
         }
+    }
+
+    /// Listens to key presses and reacts to it while stats window is active
+    ///
+    /// **Parameters:**
+    /// * `active_stat` - number of active stat to be highlighted
+    /// * `exit` - when true, app will be exited
+    ///
+    /// **Returns:**
+    /// Ok(bool) on success - false to close stats - else Err()
+    fn stats_key_listener(
+        &self,
+        active: &mut usize,
+        active_max: usize,
+        exit: &mut bool,
+    ) -> Result<bool> {
+        if poll(Duration::from_millis(100))? {
+            let event = read()?;
+
+            if event == Event::Key(KeyCode::Tab.into()) {
+                return Ok(false);
+            }
+            if event == Event::Key(KeyCode::Down.into())
+                && *active < active_max
+            {
+                *active += 1;
+                self.display_stats(*active);
+            }
+            if event == Event::Key(KeyCode::Up.into()) && *active > 0 {
+                *active -= 1;
+                self.display_stats(*active);
+            }
+            if event == Event::Key(KeyCode::Esc.into()) {
+                *exit = true;
+                return Ok(false);
+            }
+        }
+        return Ok(true);
     }
 }
