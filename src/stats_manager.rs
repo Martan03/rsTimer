@@ -102,11 +102,11 @@ impl StatsManager {
     }
 
     fn display_sessions(&self) {
-        println!("\x1b[2J\x1b[92mSessions:");
+        println!("\x1b[2J\x1b[H\x1b[92mSessions:\x1b[0m");
 
         for (key, value) in self.stats.sessions.iter() {
             println!(
-                "  \x1b[93m{key}\x1b[0m (scramble type: {})",
+                "\x1b[0G  \x1b[93m{key}\x1b[0m (scramble type: {})",
                 value.scramble_type
             );
         }
@@ -133,7 +133,7 @@ impl StatsManager {
                 return Ok(false);
             }
             if event == Event::Key(KeyCode::Down.into())
-                && *active < active_max
+                && *active < active_max - 1
             {
                 *active += 1;
                 self.display_stats(*active);
