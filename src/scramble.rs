@@ -17,7 +17,7 @@ impl Scramble {
     /// * Created Scramble struct
     pub fn new(len: usize, moves: Vec<Vec<&'static str>>) -> Scramble {
         Scramble {
-            moves: moves,
+            moves,
             scramble: "".to_owned(),
             length: len,
         }
@@ -37,7 +37,7 @@ impl Scramble {
 
             let c = rand::thread_rng().gen_range(0..self.moves[r].len());
 
-            self.scramble.push_str(&self.moves[r][c]);
+            self.scramble.push_str(self.moves[r][c]);
             self.scramble.push(' ');
         }
         self.scramble = self.scramble.trim().to_owned();
@@ -45,6 +45,6 @@ impl Scramble {
 
     /// Gets scramble
     pub fn get(&mut self) -> &str {
-        return &self.scramble;
+        &self.scramble
     }
 }

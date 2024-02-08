@@ -35,7 +35,7 @@ impl StatsManager {
                 get_scramble(&session.scramble_type);
 
             return Ok(StatsManager {
-                stats: stats,
+                stats,
                 session: name.to_owned(),
                 scramble: Scramble::new(scramble_length, scramble_moves),
             });
@@ -147,6 +147,6 @@ impl StatsManager {
                 return Ok(false);
             }
         }
-        return Ok(true);
+        Ok(true)
     }
 }

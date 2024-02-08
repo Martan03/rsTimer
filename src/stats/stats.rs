@@ -82,11 +82,11 @@ impl Stats {
         let prefix = path
             .parent()
             .ok_or(Report::msg("Error creating stats directory"))?;
-        std::fs::create_dir_all(&prefix)?;
-        std::fs::File::create(&path)?;
+        std::fs::create_dir_all(prefix)?;
+        std::fs::File::create(path)?;
 
         let text = serde_json::to_string_pretty::<Stats>(self)?;
-        std::fs::write(&path, text)?;
+        std::fs::write(path, text)?;
 
         Ok(())
     }

@@ -8,10 +8,7 @@ use crossterm::{
 };
 use eyre::Result;
 
-use self::num_parser::{get_time, print_time};
-
-#[path = "num_parser.rs"]
-mod num_parser;
+use crate::num_parser::{get_time, print_time};
 
 pub struct Game {
     timer: Timer,

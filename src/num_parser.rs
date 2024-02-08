@@ -8,18 +8,18 @@ pub fn get_time(num: f64, decimals: usize) -> Vec<String> {
     let number = format!("{:.1$}", num, decimals);
 
     for digit in number.chars() {
-        for i in 0..5 as usize {
-            numbers[i].push_str(digit_lines[&digit][i]);
+        for (i, item) in numbers.iter_mut().enumerate().take(5_usize) {
+            item.push_str(digit_lines[&digit][i]);
         }
     }
     numbers
 }
 
-fn get_time_length(time: &Vec<String>) -> usize {
-    if time.len() <= 0 {
+fn get_time_length(time: &[String]) -> usize {
+    if time.is_empty() {
         return 0;
     }
-    return time[0].len();
+    time[0].len()
 }
 
 pub fn print_time(time: Vec<String>) {

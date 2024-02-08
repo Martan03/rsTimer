@@ -15,6 +15,7 @@ mod num_parser;
 mod scramble;
 mod scrambles;
 mod stats_manager;
+#[allow(clippy::module_inception)]
 mod stats {
     pub mod session;
     pub mod stat;
@@ -42,7 +43,7 @@ fn main() -> Result<()> {
             }
             _ => {
                 // Invalid usage if scramble type already specified
-                if session != "".to_owned() {
+                if session != *"" {
                     invalid_usage("multiple scramble types");
                     std::process::exit(1);
                 }
@@ -51,7 +52,7 @@ fn main() -> Result<()> {
         }
     }
 
-    if session == "".to_owned() {
+    if session == *"" {
         invalid_usage("session name must be specified");
         std::process::exit(1);
     }
@@ -85,7 +86,7 @@ fn add_session() -> Result<()> {
     stdin().read_line(&mut scramble_type)?;
 
     let mut stats = Stats::load()?;
-    stats.add_session(&name.trim(), &scramble_type.trim())?;
+    stats.add_session(name.trim(), scramble_type.trim())?;
 
     stats.save()?;
 
