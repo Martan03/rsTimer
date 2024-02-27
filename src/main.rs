@@ -52,15 +52,14 @@ fn main() -> Result<()> {
         }
     }
 
-    if session == *"" {
-        invalid_usage("session name must be specified");
-        std::process::exit(1);
-    }
-
-    let stats_manager = StatsManager::open_session(&session)?;
-
     // Saves screen, clears screen and hides cursor
     print!("\x1b[?1049h\x1b[2J\x1b[?25l");
+
+    let stats_manager = if session == *"" {
+        StatsManager::session_picker()?
+    } else {
+        StatsManager::open_session(&session)?
+    };
 
     // Start the app
     let mut game = Game::new(stats_manager)?;

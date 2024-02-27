@@ -446,6 +446,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "term_size"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e4129646ca0ed8f45d09b929036bafad5377103edd06e50bf574b353d2b08d9"
+dependencies = [
+ "libc",
+ "winapi",
+]
+
+[[package]]
+name = "termint"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c5f56dfeb8152004bcdd3cb7dfd6455875411d4cdff18b11b9087d6a0680181"
+dependencies = [
+ "term_size",
+]
+
+[[package]]
 name = "termion"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -499,6 +518,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_json",
+ "termint",
  "termion",
 ]
 

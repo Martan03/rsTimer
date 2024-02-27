@@ -58,6 +58,10 @@ impl Stats {
     }
     */
 
+    pub fn get_sessions(&self) -> Vec<String> {
+        self.sessions.keys().map(|v| v.to_string()).collect()
+    }
+
     /// Loads stats from JSON file
     ///
     /// **Returns:**

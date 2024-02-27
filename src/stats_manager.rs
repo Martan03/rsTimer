@@ -1,7 +1,19 @@
-use std::time::Duration;
+use std::{
+    io::{stdout, Write},
+    mem,
+    time::Duration,
+};
 
-use crossterm::event::{poll, read, Event, KeyCode};
+use crossterm::{
+    event::{poll, read, Event, KeyCode},
+    terminal::{disable_raw_mode, enable_raw_mode},
+};
 use eyre::{Report, Result};
+use termint::{
+    geometry::constrain::Constrain,
+    term::Term,
+    widgets::{block::Block, border::BorderType, list::List},
+};
 
 use crate::{
     scramble::Scramble,
@@ -42,6 +54,95 @@ impl StatsManager {
         }
 
         Err(Report::msg("Error: scramble type not found"))
+    }
+
+    pub fn session_picker() -> Result<StatsManager> {
+        let stats = Stats::load()?;
+        let sessions = stats.get_sessions();
+        let (session, mut cur): (String, Option<usize>) =
+            if let Some(session) = sessions.get(0) {
+                (session.to_owned(), Some(0))
+            } else {
+                ("".to_owned(), None)
+            };
+
+        let mut mngr = Self {
+            stats,
+            session,
+            scramble: Scramble::new(0, vec![]),
+        };
+
+        enable_raw_mode()?;
+
+        mngr.render_session_pick(cur);
+        let mut con = true;
+        while con {
+            if poll(Duration::from_millis(100))? {
+                if let Err(e) = mngr.session_pick_listen(&mut con, &mut cur) {
+                    disable_raw_mode()?;
+                    return Err(Report::msg(e));
+                };
+            }
+        }
+
+        disable_raw_mode()?;
+        let Some(current) = cur else {
+            return Err(Report::msg("No item selected"));
+        };
+        mngr.session = mngr.stats.get_sessions()[current].to_owned();
+        let Some(session) = mngr.stats.sessions.get(&mngr.session) else {
+            return Err(Report::msg("Scramble type not found"));
+        };
+        let (scramble_length, scramble_moves) =
+            get_scramble(&session.scramble_type);
+        mngr.scramble = Scramble::new(scramble_length, scramble_moves);
+        return Ok(mngr);
+    }
+
+    fn session_pick_listen(
+        &self,
+        con: &mut bool,
+        cur: &mut Option<usize>,
+    ) -> Result<()> {
+        let event = read()?;
+
+        if event == Event::Key(KeyCode::Esc.into()) {
+            return Err(Report::msg("User quit selection"));
+        } else if event == Event::Key(KeyCode::Up.into()) {
+            if let Some(val) = cur {
+                *cur = Some(val.saturating_sub(1));
+                self.render_session_pick(*cur);
+            }
+        } else if event == Event::Key(KeyCode::Down.into()) {
+            if let Some(val) = cur {
+                if *val + 1 < self.stats.get_sessions().len() {
+                    *cur = Some(*val + 1);
+                    self.render_session_pick(*cur);
+                }
+            }
+        } else if event == Event::Key(KeyCode::Enter.into()) {
+            *con = false;
+        }
+
+        Ok(())
+    }
+
+    fn render_session_pick(&self, cur: Option<usize>) {
+        let mut block = Block::new()
+            .title("Sessions")
+            .border_type(BorderType::Thicker);
+
+        let keys = self.stats.get_sessions();
+        let sessions: Vec<&str> = keys.iter().map(|v| v.as_str()).collect();
+        let static_sessions = unsafe { mem::transmute(sessions) };
+
+        let list = List::new(static_sessions).current(cur);
+        block.add_child(list, Constrain::Fill);
+
+        let term = Term::new();
+        print!("\x1b[H\x1b[J");
+        _ = term.render(block);
+        _ = stdout().flush();
     }
 
     /// Adds time to active session
