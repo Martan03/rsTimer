@@ -3,8 +3,13 @@ use crossterm::{
     Result,
 };
 use std::time::{Duration, Instant};
+use termint::{
+    geometry::constrain::Constrain,
+    term::Term,
+    widgets::{block::Block, span::StrSpanExtension},
+};
 
-use crate::num_parser::{get_time, print_time};
+use crate::num_parser::{get_time, time_layout};
 
 pub struct Timer {
     decimals: usize,
@@ -32,11 +37,8 @@ impl Timer {
     ///
     /// **Result:**
     /// * Ok() on success, else Err
-    pub fn start_timer(&mut self) -> Result<()> {
-        // Clears screen and prints
-        print!("\x1b[2J");
-
-        print_time(get_time(0.0, self.decimals));
+    pub fn start_timer(&mut self, title: &str) -> Result<()> {
+        self.render(title, &get_time(0.0, self.decimals));
 
         let start = Instant::now();
         self.running = true;
@@ -44,14 +46,32 @@ impl Timer {
         // Timer loop
         while self.running {
             self.key_listener()?;
-
-            print_time(get_time(start.elapsed().as_secs_f64(), self.decimals));
+            self.render(
+                title,
+                &get_time(start.elapsed().as_secs_f64(), self.decimals),
+            );
         }
 
         self.time = start.elapsed();
-        print_time(get_time(start.elapsed().as_secs_f64(), self.decimals));
+        self.render(
+            title,
+            &get_time(start.elapsed().as_secs_f64(), self.decimals),
+        );
 
         Ok(())
+    }
+
+    fn render(&self, title: &str, time: &[String]) {
+        print!("\x1b[2J");
+
+        let mut block = Block::new().title(title);
+        block.add_child("".to_span(), Constrain::Length(1));
+        block.add_child("".to_span(), Constrain::Fill);
+        block.add_child(time_layout(time), Constrain::Min(0));
+        block.add_child("".to_span(), Constrain::Fill);
+
+        let term = Term::new();
+        _ = term.render(block);
     }
 
     /// Listens to key presses and reacts to it

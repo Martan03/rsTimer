@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use crate::{
-    num_parser::get_time_length, stats_manager::StatsManager, timer::Timer,
+    num_parser::time_layout, stats_manager::StatsManager, timer::Timer,
 };
 
 use crossterm::{
@@ -10,11 +10,10 @@ use crossterm::{
 };
 use eyre::Result;
 use termint::{
-    enums::wrap::Wrap,
-    geometry::{constrain::Constrain, direction::Direction},
+    geometry::constrain::Constrain,
     term::Term,
     widgets::{
-        block::Block, border::BorderType, grad::Grad, layout::Layout,
+        block::Block, border::BorderType, layout::Layout,
         span::StrSpanExtension,
     },
 };
@@ -75,11 +74,11 @@ impl Game {
 
         // Starts timer when Space pressed
         if event == Event::Key(KeyCode::Char(' ').into()) {
-            self.timer.start_timer()?;
+            self.timer.start_timer(&self.stats_manager.session)?;
             self.stats_manager.add_time(self.timer.get_time())?;
 
             self.stats_manager.scramble.generate();
-            //self.print_scramble();
+            self.print_screen();
         }
         if event == Event::Key(KeyCode::Char('s').into()) {
             self.stats_manager.open_session_list();
@@ -110,8 +109,7 @@ impl Game {
         block.add_child(self.scramble_layout(), Constrain::Length(1));
         block.add_child("".to_span(), Constrain::Fill);
         let time = get_time(self.timer.get_time().as_secs_f64(), 3);
-        block
-            .add_child(self.time_layout(&time), Constrain::Length(time.len()));
+        block.add_child(time_layout(&time), Constrain::Min(0));
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();
@@ -125,23 +123,6 @@ impl Game {
         layout.add_child(
             self.stats_manager.scramble.get().to_span(),
             Constrain::Min(0),
-        );
-        layout.add_child("".to_span(), Constrain::Fill);
-        layout
-    }
-
-    fn time_layout(&mut self, time: &[String]) -> Layout {
-        let time_len = get_time_length(time);
-        let time_str = time.join("");
-
-        let mut layout = Layout::horizontal();
-        layout.add_child("".to_span(), Constrain::Fill);
-        layout.add_child(
-            Grad::new(time_str, (0, 220, 255), (160, 100, 255))
-                .direction(Direction::Vertical)
-                .wrap(Wrap::Letter)
-                .ellipsis(""),
-            Constrain::Length(time_len),
         );
         layout.add_child("".to_span(), Constrain::Fill);
         layout
