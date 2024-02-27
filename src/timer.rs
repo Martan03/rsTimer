@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use termint::{
     geometry::constrain::Constrain,
     term::Term,
-    widgets::{block::Block, span::StrSpanExtension},
+    widgets::{block::Block, border::BorderType, span::StrSpanExtension},
 };
 
 use crate::num_parser::{get_time, time_layout};
@@ -64,7 +64,8 @@ impl Timer {
     fn render(&self, title: &str, time: &[String]) {
         print!("\x1b[2J");
 
-        let mut block = Block::new().title(title);
+        let mut block =
+            Block::new().title(title).border_type(BorderType::Thicker);
         block.add_child("".to_span(), Constrain::Length(1));
         block.add_child("".to_span(), Constrain::Fill);
         block.add_child(time_layout(time), Constrain::Min(0));
