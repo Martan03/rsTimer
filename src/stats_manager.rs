@@ -60,7 +60,7 @@ impl StatsManager {
         let stats = Stats::load()?;
         let sessions = stats.get_sessions();
         let (session, mut cur): (String, Option<usize>) =
-            if let Some(session) = sessions.get(0) {
+            if let Some(session) = sessions.first() {
                 (session.to_owned(), Some(0))
             } else {
                 ("".to_owned(), None)
@@ -96,7 +96,7 @@ impl StatsManager {
         let (scramble_length, scramble_moves) =
             get_scramble(&session.scramble_type);
         mngr.scramble = Scramble::new(scramble_length, scramble_moves);
-        return Ok(mngr);
+        Ok(mngr)
     }
 
     fn session_pick_listen(

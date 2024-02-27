@@ -15,7 +15,7 @@ pub fn get_time(num: f64, decimals: usize) -> Vec<String> {
     numbers
 }
 
-fn get_time_length(time: &[String]) -> usize {
+pub fn get_time_length(time: &[String]) -> usize {
     if time.is_empty() {
         return 0;
     }

@@ -1,14 +1,25 @@
 use std::time::Duration;
 
-use crate::{stats_manager::StatsManager, timer::Timer};
+use crate::{
+    num_parser::get_time_length, stats_manager::StatsManager, timer::Timer,
+};
 
 use crossterm::{
     event::{poll, read, Event, KeyCode},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use eyre::Result;
+use termint::{
+    enums::wrap::Wrap,
+    geometry::{constrain::Constrain, direction::Direction},
+    term::Term,
+    widgets::{
+        block::Block, border::BorderType, grad::Grad, layout::Layout,
+        span::StrSpanExtension,
+    },
+};
 
-use crate::num_parser::{get_time, print_time};
+use crate::num_parser::get_time;
 
 pub struct Game {
     timer: Timer,
@@ -43,7 +54,6 @@ impl Game {
 
         // Generates scramble
         self.stats_manager.scramble.generate();
-
         self.print_screen();
 
         // Game loop
@@ -69,7 +79,7 @@ impl Game {
             self.stats_manager.add_time(self.timer.get_time())?;
 
             self.stats_manager.scramble.generate();
-            self.print_scramble();
+            //self.print_scramble();
         }
         if event == Event::Key(KeyCode::Char('s').into()) {
             self.stats_manager.open_session_list();
@@ -93,15 +103,47 @@ impl Game {
     /// Prints screen (scramble, time)
     fn print_screen(&mut self) {
         print!("\x1b[H\x1b[J");
-        self.print_scramble();
-        print_time(get_time(self.timer.get_time().as_secs_f64(), 3));
+        let mut block = Block::new()
+            .title(self.stats_manager.session.as_str())
+            .border_type(BorderType::Thicker);
+
+        block.add_child(self.scramble_layout(), Constrain::Length(1));
+        block.add_child("".to_span(), Constrain::Fill);
+        let time = get_time(self.timer.get_time().as_secs_f64(), 3);
+        block
+            .add_child(self.time_layout(&time), Constrain::Length(time.len()));
+        block.add_child("".to_span(), Constrain::Fill);
+
+        let term = Term::new();
+        _ = term.render(block);
     }
 
-    /// Prints scramble
-    fn print_scramble(&mut self) {
-        let (w, _) = termion::terminal_size().unwrap();
-        let px = (w as usize - self.stats_manager.scramble.get().len()) / 2;
+    /// Gets scramble layout
+    fn scramble_layout(&mut self) -> Layout {
+        let mut layout = Layout::horizontal();
+        layout.add_child("".to_span(), Constrain::Fill);
+        layout.add_child(
+            self.stats_manager.scramble.get().to_span(),
+            Constrain::Min(0),
+        );
+        layout.add_child("".to_span(), Constrain::Fill);
+        layout
+    }
 
-        println!("\x1b[1;{px}H\x1b[0m{}", self.stats_manager.scramble.get());
+    fn time_layout(&mut self, time: &[String]) -> Layout {
+        let time_len = get_time_length(time);
+        let time_str = time.join("");
+
+        let mut layout = Layout::horizontal();
+        layout.add_child("".to_span(), Constrain::Fill);
+        layout.add_child(
+            Grad::new(time_str, (0, 220, 255), (160, 100, 255))
+                .direction(Direction::Vertical)
+                .wrap(Wrap::Letter)
+                .ellipsis(""),
+            Constrain::Length(time_len),
+        );
+        layout.add_child("".to_span(), Constrain::Fill);
+        layout
     }
 }
