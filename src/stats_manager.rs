@@ -94,6 +94,26 @@ impl StatsManager {
         Ok(mngr)
     }
 
+    /// Opens stats window
+    ///
+    /// **Returns:**
+    /// Ok(bool) on success - true to exit app - else Err()
+    pub fn open_stats(&self) -> Result<bool> {
+        let mut cur = Some(0_usize);
+        let mut con = true;
+
+        // TODO remove unwrap
+        self.display_stats(cur.unwrap());
+
+        while con {
+            if poll(Duration::from_millis(100))? {
+                self.stats_listen(&mut cur, &mut con);
+            }
+        }
+
+        Ok(false)
+    }
+
     /// Adds time to active session
     ///
     /// **Parameters:**
@@ -107,27 +127,6 @@ impl StatsManager {
             &self.session,
         )?;
         Ok(())
-    }
-
-    /// Opens stats window
-    ///
-    /// **Returns:**
-    /// Ok(bool) on success - true to exit app - else Err()
-    pub fn open_stats(&self) -> Result<bool> {
-        let mut active_stat: usize = 0;
-        let mut exit = false;
-
-        self.display_stats(active_stat);
-
-        while self.stats_key_listener(
-            &mut active_stat,
-            self.stats.sessions[&self.session].stats.len(),
-            &mut exit,
-        )? {
-            // Empty loop body
-        }
-
-        Ok(exit)
     }
 
     /// Opens sessions list
@@ -221,33 +220,39 @@ impl StatsManager {
     }
 
     /// Listens to key presses and reacts to it while stats window is active
-    fn stats_key_listener(
+    fn stats_listen(
         &self,
-        active: &mut usize,
-        active_max: usize,
-        exit: &mut bool,
+        cur: &mut Option<usize>,
+        con: &mut bool,
     ) -> Result<bool> {
-        if poll(Duration::from_millis(100))? {
-            let event = read()?;
+        let Event::Key(KeyEvent { code, .. }) = read()? else {
+            return Ok(false);
+        };
 
-            if event == Event::Key(KeyCode::Tab.into()) {
-                return Ok(false);
+        match code {
+            KeyCode::Tab => return Ok(false),
+            KeyCode::Up => {
+                if let Some(val) = cur {
+                    *cur = Some(val.saturating_sub(1));
+                    // TODO add rerender
+                    // self.render_stats(*cur);
+                }
             }
-            if event == Event::Key(KeyCode::Down.into())
-                && *active < active_max - 1
-            {
-                *active += 1;
-                self.display_stats(*active);
+            KeyCode::Down => {
+                if let Some(val) = cur {
+                    if *val + 1
+                        < self.stats.sessions[&self.session].stats.len()
+                    {
+                        *cur = Some(*val + 1);
+                        // TODO add re-render
+                    }
+                }
             }
-            if event == Event::Key(KeyCode::Up.into()) && *active > 0 {
-                *active -= 1;
-                self.display_stats(*active);
+            KeyCode::Esc => {
+                // TODO
             }
-            if event == Event::Key(KeyCode::Esc.into()) {
-                *exit = true;
-                return Ok(false);
-            }
+            _ => {}
         }
-        Ok(true)
+        Ok(false)
     }
 }
