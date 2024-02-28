@@ -3,10 +3,10 @@ use std::time::Duration;
 use crate::{asci::time_layout, stats_manager::StatsManager, timer::Timer};
 
 use crossterm::{
-    event::{poll, read, Event, KeyCode},
+    event::{poll, read, Event, KeyCode, KeyEvent},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
-use eyre::Result;
+use eyre::{Report, Result};
 use termint::{
     geometry::constrain::Constrain,
     term::Term,
@@ -23,25 +23,25 @@ pub struct Game {
 }
 
 impl Game {
-    /// Constructs a new Game
+    /// Constructs a new [`Game`]
     ///
     /// **Parameters:**
     /// * `stats_manager` - struct for stats managing
     ///
     /// **Returns:**
-    /// * Constructed Game in Result
-    pub fn new(stats_manager: StatsManager) -> Result<Game> {
-        Ok(Game {
+    /// * Constructed [`Game`] in Result
+    pub fn new(stats_manager: StatsManager) -> Self {
+        Self {
             timer: Timer::new(3),
             con: false,
             stats_manager,
-        })
+        }
     }
 
     /// Starts main game loop
     ///
     /// **Returns:**
-    /// * Ok() on success, else Err
+    /// * Ok() on success, else Err with corresponding error message
     pub fn start_game(&mut self) -> Result<()> {
         enable_raw_mode()?;
 
@@ -49,7 +49,7 @@ impl Game {
 
         // Generates scramble
         self.stats_manager.scramble.generate();
-        self.print_screen();
+        self.render()?;
 
         // Game loop
         while self.con {
@@ -64,39 +64,43 @@ impl Game {
     /// Listens to key presses
     ///
     /// **Returns:**
-    /// * Ok() on success, else Err
+    /// * Ok() on success, else Err with corresponding error message
     fn key_listener(&mut self) -> Result<()> {
-        let event = read()?;
+        let Event::Key(KeyEvent { code, .. }) = read()? else {
+            return Ok(());
+        };
 
-        // Starts timer when Space pressed
-        if event == Event::Key(KeyCode::Char(' ').into()) {
-            self.timer.start_timer(&self.stats_manager.session)?;
-            self.stats_manager.add_time(self.timer.get_time())?;
+        match code {
+            // Starts timer when Space pressed
+            KeyCode::Char(' ') => {
+                self.timer.start_timer(&self.stats_manager.session)?;
+                self.stats_manager.add_time(self.timer.get_time())?;
 
-            self.stats_manager.scramble.generate();
-            self.print_screen();
-        }
-        if event == Event::Key(KeyCode::Char('s').into()) {
-            self.stats_manager.open_session_list();
-        }
-        // Opens statistics
-        if event == Event::Key(KeyCode::Tab.into()) {
-            if self.stats_manager.open_stats()? {
-                self.con = false;
-                self.stats_manager.stats.save()?;
+                self.stats_manager.scramble.generate();
+                self.render()?;
             }
-            self.print_screen();
-        }
-        // Ends game loop when ESC pressed
-        if event == Event::Key(KeyCode::Esc.into()) {
-            self.stats_manager.stats.save()?;
-            self.con = false;
+            // Opens session list
+            KeyCode::Char('s') => self.stats_manager.open_session_list(),
+            // Displays sesssion stats
+            KeyCode::Tab => {
+                if self.stats_manager.open_stats()? {
+                    self.con = false;
+                    self.stats_manager.stats.save()?;
+                }
+                self.render()?;
+            }
+            // Closes the game
+            KeyCode::Esc => {
+                self.stats_manager.stats.save()?;
+                self.con = false;
+            }
+            _ => {}
         }
         Ok(())
     }
 
-    /// Prints screen (scramble, time)
-    fn print_screen(&mut self) {
+    /// Renders the idle timer screen
+    fn render(&mut self) -> Result<()> {
         print!("\x1b[H\x1b[J");
         let mut block = Block::new()
             .title(self.stats_manager.session.as_str())
@@ -111,7 +115,7 @@ impl Game {
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();
-        _ = term.render(block);
+        term.render(block).map_err(|e| Report::msg(e))
     }
 
     /// Gets scramble layout

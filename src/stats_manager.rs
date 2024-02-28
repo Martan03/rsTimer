@@ -20,6 +20,7 @@ use crate::{
     stats::{stat::Stat, stats::Stats},
 };
 
+/// Stores session stats, session name and current scramble
 pub struct StatsManager {
     pub stats: Stats,
     pub session: String,
@@ -38,7 +39,10 @@ impl StatsManager {
         let stats = Stats::load()?;
 
         if !stats.exists(name) {
-            return Err(Report::msg("Error: given session doesn't exist"));
+            return Err(Report::msg(format!(
+                "Session '{}' doesn't exist.",
+                name
+            )));
         }
 
         if let Some(session) = stats.sessions.get(name) {

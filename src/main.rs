@@ -19,13 +19,8 @@ mod args;
 mod asci;
 mod game;
 mod scramble;
+mod stats;
 mod stats_manager;
-#[allow(clippy::module_inception)]
-mod stats {
-    pub mod session;
-    pub mod stat;
-    pub mod stats;
-}
 mod timer;
 
 fn main() {
@@ -74,7 +69,7 @@ fn run_timer(session: String) -> Result<()> {
         StatsManager::open(&session)?
     };
 
-    let mut game = Game::new(stats)?;
+    let mut game = Game::new(stats);
     game.start_game()?;
 
     Ok(())

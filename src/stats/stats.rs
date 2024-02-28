@@ -14,58 +14,10 @@ pub struct Stats {
 }
 
 impl Stats {
-    /// Adds given stat to the stats of given session
-    ///
-    /// **Parameters:**
-    /// * `stat` - stat to be added
-    /// * `session` - session name
-    pub fn add(&mut self, stat: Stat, session: &str) -> Result<()> {
-        if let Some(session) = self.sessions.get_mut(session) {
-            session.add(stat);
-            Ok(())
-        } else {
-            Err(Report::msg("Error: non existing session"))
-        }
-    }
-
-    pub fn add_session(
-        &mut self,
-        session: &str,
-        scramble_type: &str,
-    ) -> Result<()> {
-        if self.exists(session) {
-            Err(Report::msg("Error: session with this name already exists"))
-        } else {
-            self.sessions
-                .insert(session.to_owned(), Session::new(scramble_type));
-            Ok(())
-        }
-    }
-
-    /// Gets session by given name
-    ///
-    /// **Parameters:**
-    /// * `session` - session name
-    ///
-    /// **Returns:**
-    /// * Stats vector of the session with session name
-    /*
-    pub fn get_session(&self, session: &str) -> Result<Vec<Stat>> {
-        match self.sessions.get(session) {
-            Some(stats) => Ok(stats.clone()),
-            None => Err(Report::msg("Error getting given session")),
-        }
-    }
-    */
-
-    pub fn get_sessions(&self) -> Vec<String> {
-        self.sessions.keys().map(|v| v.to_string()).collect()
-    }
-
     /// Loads stats from JSON file
     ///
     /// **Returns:**
-    /// * Loaded stats in Result
+    /// * Loaded stats in Result - contains error message on error
     pub fn load() -> Result<Stats> {
         let stats = match std::fs::read_to_string(Stats::get_stats_dir()?) {
             Err(_) => Stats {
@@ -79,7 +31,7 @@ impl Stats {
     /// Saves stats to json file
     ///
     /// **Returns:**
-    /// * Ok() on success, else Err with Report message
+    /// * Ok() on success, else Err with corresponding error message
     pub fn save(&self) -> Result<()> {
         let filename = Stats::get_stats_dir()?;
         let path = std::path::Path::new(&filename);
@@ -95,10 +47,60 @@ impl Stats {
         Ok(())
     }
 
+    /// Adds given stat to the stats of given session
+    ///
+    /// **Parameters:**
+    /// * `stat` - stat to be added
+    /// * `session` - session name
+    pub fn add(&mut self, stat: Stat, session: &str) -> Result<()> {
+        if let Some(session) = self.sessions.get_mut(session) {
+            session.add(stat);
+            Ok(())
+        } else {
+            Err(Report::msg("Error: non existing session"))
+        }
+    }
+
+    /// Adds given session to the stats
+    ///
+    /// **Parameters:**
+    /// * `session` - name of the session
+    /// * `scramble_type` - type of the scramble
+    ///
+    /// **Returns:**
+    /// * Ok on success, else Err with corresponding error message
+    pub fn add_session(
+        &mut self,
+        session: &str,
+        scramble_type: &str,
+    ) -> Result<()> {
+        if self.exists(session) {
+            Err(Report::msg("Error: session with this name already exists"))
+        } else {
+            self.sessions
+                .insert(session.to_owned(), Session::new(scramble_type));
+            Ok(())
+        }
+    }
+
+    /// Gets all session names
+    ///
+    /// **Returns:**
+    /// * Vector containing all session names
+    pub fn get_sessions(&self) -> Vec<String> {
+        self.sessions.keys().map(|v| v.to_string()).collect()
+    }
+
+    /// Checks whether session exists
+    ///
+    /// **Returns:**
+    /// * True when exists, else falses
     pub fn exists(&self, session: &str) -> bool {
         self.sessions.contains_key(session)
     }
 
+    /// This might be removed (doesn't really make sense to be here)
+    /// TODO
     pub fn print_sessions(&self) {
         println!("\x1b[92mSessions:");
 

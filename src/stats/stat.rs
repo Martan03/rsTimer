@@ -13,6 +13,26 @@ pub struct Stat {
     datetime: DateTime<Local>,
 }
 
+impl Stat {
+    /// Creates new [`Stat`]
+    ///
+    /// **Parameters:**
+    /// * `time` - duration it took to solve the cube
+    /// * `scramble` - cube scramble
+    /// * `comment` - comment to be added to this solve in stats
+    ///
+    /// **Returns:**
+    /// * Created [`Stat`]
+    pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
+        Stat {
+            time,
+            scramble,
+            comment,
+            datetime: offset::Local::now(),
+        }
+    }
+}
+
 /// Custom date format to be able to serialize the date
 mod stat_date_format {
     use chrono::{DateTime, Local, TimeZone};
@@ -41,25 +61,5 @@ mod stat_date_format {
         Local
             .datetime_from_str(&s, FORMAT)
             .map_err(serde::de::Error::custom)
-    }
-}
-
-impl Stat {
-    /// Creates new [`Stat`]
-    ///
-    /// **Parameters:**
-    /// * `time` - duration it took to solve the cube
-    /// * `scramble` - cube scramble
-    /// * `comment` - comment to be added to this solve in stats
-    ///
-    /// **Returns:**
-    /// * Created [`Stat`]
-    pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
-        Stat {
-            time,
-            scramble,
-            comment,
-            datetime: offset::Local::now(),
-        }
     }
 }
