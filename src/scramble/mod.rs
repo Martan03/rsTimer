@@ -9,13 +9,13 @@ pub use scramble::Scramble;
 /// * `scramble_type` - type of scramble (eg. 3x3x3)
 ///
 /// **Returns:**
-/// * Tupple consisting of scramble size and moves vector
-pub fn get_scramble(scramble_type: &str) -> (usize, Vec<Vec<&'static str>>) {
+/// * [`Scramble`] struct
+pub fn get_scramble(scramble_type: &str) -> Scramble {
     match scramble_type {
-        "2x2x2" => (9, get_2x2x2()),
-        "3x3x3" => (21, get_3x3x3()),
-        "4x4x4" => (43, get_4x4x4()),
-        _ => (0, vec![vec![]]),
+        "2x2x2" => Scramble::new(9, get_2x2x2()),
+        "3x3x3" => Scramble::new(21, get_3x3x3()),
+        "4x4x4" => Scramble::new(43, get_4x4x4()),
+        _ => Scramble::new(0, vec![vec![]]),
     }
 }
 

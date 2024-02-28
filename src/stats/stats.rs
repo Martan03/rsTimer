@@ -83,6 +83,10 @@ impl Stats {
         }
     }
 
+    pub fn get_session(&self, name: &str) -> Option<&Session> {
+        return self.sessions.get(name);
+    }
+
     /// Gets all session names
     ///
     /// **Returns:**
@@ -113,11 +117,10 @@ impl Stats {
             }
         }
     }
+}
 
+impl Stats {
     /// Gets the directory to save stats in
-    ///
-    /// **Returns:**
-    /// * Ok(directory path string) on success, else Err
     fn get_stats_dir() -> Result<String> {
         Ok("./stats".to_owned())
         /* For debugging purposes stats directory will be in code directory

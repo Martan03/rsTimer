@@ -18,7 +18,7 @@ use termint::{
 
 pub struct Game {
     timer: Timer,
-    con: bool,
+    started: bool,
     stats_manager: StatsManager,
 }
 
@@ -33,7 +33,7 @@ impl Game {
     pub fn new(stats_manager: StatsManager) -> Self {
         Self {
             timer: Timer::new(3),
-            con: false,
+            started: false,
             stats_manager,
         }
     }
@@ -45,14 +45,13 @@ impl Game {
     pub fn start_game(&mut self) -> Result<()> {
         enable_raw_mode()?;
 
-        self.con = true;
-
         // Generates scramble
         self.stats_manager.scramble.generate();
         self.render()?;
 
         // Game loop
-        while self.con {
+        self.started = true;
+        while self.started {
             if poll(Duration::from_millis(100))? {
                 self.key_listener()?;
             }
@@ -60,11 +59,11 @@ impl Game {
 
         Ok(disable_raw_mode()?)
     }
+}
 
+// Private methods implementations
+impl Game {
     /// Listens to key presses
-    ///
-    /// **Returns:**
-    /// * Ok() on success, else Err with corresponding error message
     fn key_listener(&mut self) -> Result<()> {
         let Event::Key(KeyEvent { code, .. }) = read()? else {
             return Ok(());
@@ -84,7 +83,7 @@ impl Game {
             // Displays sesssion stats
             KeyCode::Tab => {
                 if self.stats_manager.open_stats()? {
-                    self.con = false;
+                    self.started = false;
                     self.stats_manager.stats.save()?;
                 }
                 self.render()?;
@@ -92,7 +91,7 @@ impl Game {
             // Closes the game
             KeyCode::Esc => {
                 self.stats_manager.stats.save()?;
-                self.con = false;
+                self.started = false;
             }
             _ => {}
         }

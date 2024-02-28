@@ -5,7 +5,7 @@ use std::{
 };
 
 use crossterm::{
-    event::{poll, read, Event, KeyCode},
+    event::{poll, read, Event, KeyCode, KeyEvent},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use eyre::{Report, Result};
@@ -31,47 +31,38 @@ impl StatsManager {
     /// Loads stats and opens given session
     ///
     /// **Parameters:**
-    /// * `session` - name of the session to be opened
+    /// * `name` - name of the session to be opened
     ///
     /// **Returns:**
     /// * Ok() on success, else Err()
     pub fn open(name: &str) -> Result<StatsManager> {
         let stats = Stats::load()?;
 
-        if !stats.exists(name) {
+        let Some(session) = stats.get_session(name).cloned() else {
             return Err(Report::msg(format!(
                 "Session '{}' doesn't exist.",
                 name
             )));
-        }
+        };
 
-        if let Some(session) = stats.sessions.get(name) {
-            let (scramble_length, scramble_moves) =
-                get_scramble(&session.scramble_type);
-
-            return Ok(StatsManager {
-                stats,
-                session: name.to_owned(),
-                scramble: Scramble::new(scramble_length, scramble_moves),
-            });
-        }
-
-        Err(Report::msg("Error: scramble type not found"))
+        Ok(StatsManager {
+            stats,
+            session: name.to_owned(),
+            scramble: get_scramble(&session.scramble_type),
+        })
     }
 
+    /// Displays session picker and open selected session
+    ///
+    /// **Returns:**
+    /// * [`StatsManager`] in Result, Err with error message when occures
     pub fn picker() -> Result<StatsManager> {
         let stats = Stats::load()?;
-        let sessions = stats.get_sessions();
-        let (session, mut cur): (String, Option<usize>) =
-            if let Some(session) = sessions.first() {
-                (session.to_owned(), Some(0))
-            } else {
-                ("".to_owned(), None)
-            };
+        let mut cur = stats.get_sessions().first().map(|_| 0_usize);
 
         let mut mngr = Self {
             stats,
-            session,
+            session: "".to_owned(),
             scramble: Scramble::new(0, vec![]),
         };
 
@@ -89,63 +80,18 @@ impl StatsManager {
         }
 
         disable_raw_mode()?;
-        let Some(current) = cur else {
-            return Err(Report::msg("No item selected"));
-        };
-        mngr.session = mngr.stats.get_sessions()[current].to_owned();
+        let current = cur.ok_or(Report::msg("No item selected"))?;
+        mngr.session = mngr
+            .stats
+            .get_sessions()
+            .get(current)
+            .ok_or(Report::msg("Getting session"))?
+            .to_owned();
         let Some(session) = mngr.stats.sessions.get(&mngr.session) else {
-            return Err(Report::msg("Scramble type not found"));
+            return Err(Report::msg("Session doesn't exist"));
         };
-        let (scramble_length, scramble_moves) =
-            get_scramble(&session.scramble_type);
-        mngr.scramble = Scramble::new(scramble_length, scramble_moves);
+        mngr.scramble = get_scramble(&session.scramble_type);
         Ok(mngr)
-    }
-
-    fn session_pick_listen(
-        &self,
-        con: &mut bool,
-        cur: &mut Option<usize>,
-    ) -> Result<()> {
-        let event = read()?;
-
-        if event == Event::Key(KeyCode::Esc.into()) {
-            return Err(Report::msg("User quit selection"));
-        } else if event == Event::Key(KeyCode::Up.into()) {
-            if let Some(val) = cur {
-                *cur = Some(val.saturating_sub(1));
-                self.render_session_pick(*cur);
-            }
-        } else if event == Event::Key(KeyCode::Down.into()) {
-            if let Some(val) = cur {
-                if *val + 1 < self.stats.get_sessions().len() {
-                    *cur = Some(*val + 1);
-                    self.render_session_pick(*cur);
-                }
-            }
-        } else if event == Event::Key(KeyCode::Enter.into()) {
-            *con = false;
-        }
-
-        Ok(())
-    }
-
-    fn render_session_pick(&self, cur: Option<usize>) {
-        let mut block = Block::new()
-            .title("Sessions")
-            .border_type(BorderType::Thicker);
-
-        let keys = self.stats.get_sessions();
-        let sessions: Vec<&str> = keys.iter().map(|v| v.as_str()).collect();
-        let static_sessions = unsafe { mem::transmute(sessions) };
-
-        let list = List::new(static_sessions).current(cur);
-        block.add_child(list, Constrain::Fill);
-
-        let term = Term::new();
-        print!("\x1b[H\x1b[J");
-        _ = term.render(block);
-        _ = stdout().flush();
     }
 
     /// Adds time to active session
@@ -184,10 +130,71 @@ impl StatsManager {
         Ok(exit)
     }
 
+    /// Opens sessions list
+    pub fn open_session_list(&self) {
+        self.display_sessions();
+    }
+}
+
+// Private method implementations
+impl StatsManager {
+    /// Session picker key listener
+    fn session_pick_listen(
+        &self,
+        con: &mut bool,
+        cur: &mut Option<usize>,
+    ) -> Result<()> {
+        let Event::Key(KeyEvent { code, .. }) = read()? else {
+            return Ok(());
+        };
+
+        match code {
+            // Quits session picker
+            KeyCode::Esc => return Err(Report::msg("User quit selection")),
+            // Moves list selection one item up
+            KeyCode::Up => {
+                if let Some(val) = cur {
+                    *cur = Some(val.saturating_sub(1));
+                    self.render_session_pick(*cur);
+                }
+            }
+            // Moves list selection one item down
+            KeyCode::Down => {
+                if let Some(val) = cur {
+                    if *val + 1 < self.stats.get_sessions().len() {
+                        *cur = Some(*val + 1);
+                        self.render_session_pick(*cur);
+                    }
+                }
+            }
+            // Select current session
+            KeyCode::Enter => *con = false,
+            _ => {}
+        }
+
+        Ok(())
+    }
+
+    /// Renders session picker
+    fn render_session_pick(&self, cur: Option<usize>) {
+        let mut block = Block::new()
+            .title("Sessions")
+            .border_type(BorderType::Thicker);
+
+        let keys = self.stats.get_sessions();
+        let sessions: Vec<&str> = keys.iter().map(|v| v.as_str()).collect();
+        let static_sessions = unsafe { mem::transmute(sessions) };
+
+        let list = List::new(static_sessions).current(cur);
+        block.add_child(list, Constrain::Fill);
+
+        let term = Term::new();
+        print!("\x1b[H\x1b[J");
+        _ = term.render(block);
+        _ = stdout().flush();
+    }
+
     /// Displays stats of active session
-    ///
-    /// **Parameters:**
-    /// * `active_stat` - number of active stat to be highlighted
     fn display_stats(&self, active_stat: usize) {
         println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
 
@@ -201,10 +208,7 @@ impl StatsManager {
         }
     }
 
-    pub fn open_session_list(&self) {
-        self.display_sessions();
-    }
-
+    /// Displays sessions
     fn display_sessions(&self) {
         println!("\x1b[2J\x1b[H\x1b[92mSessions:\x1b[0m");
 
@@ -217,13 +221,6 @@ impl StatsManager {
     }
 
     /// Listens to key presses and reacts to it while stats window is active
-    ///
-    /// **Parameters:**
-    /// * `active_stat` - number of active stat to be highlighted
-    /// * `exit` - when true, app will be exited
-    ///
-    /// **Returns:**
-    /// Ok(bool) on success - false to close stats - else Err()
     fn stats_key_listener(
         &self,
         active: &mut usize,
