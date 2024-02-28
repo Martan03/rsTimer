@@ -9,7 +9,7 @@ use termint::{
     widgets::{block::Block, border::BorderType, span::StrSpanExtension},
 };
 
-use crate::num_parser::{get_time, time_layout};
+use crate::asci::time_layout;
 
 pub struct Timer {
     decimals: usize,
@@ -38,7 +38,7 @@ impl Timer {
     /// **Result:**
     /// * Ok() on success, else Err
     pub fn start_timer(&mut self, title: &str) -> Result<()> {
-        self.render(title, &get_time(0.0, self.decimals));
+        self.render(title, 0.0);
 
         let start = Instant::now();
         self.running = true;
@@ -46,29 +46,24 @@ impl Timer {
         // Timer loop
         while self.running {
             self.key_listener()?;
-            self.render(
-                title,
-                &get_time(start.elapsed().as_secs_f64(), self.decimals),
-            );
+            self.render(title, start.elapsed().as_secs_f64());
         }
 
         self.time = start.elapsed();
-        self.render(
-            title,
-            &get_time(start.elapsed().as_secs_f64(), self.decimals),
-        );
+        self.render(title, start.elapsed().as_secs_f64());
 
         Ok(())
     }
 
-    fn render(&self, title: &str, time: &[String]) {
+    fn render(&self, title: &str, time: f64) {
         print!("\x1b[2J");
 
         let mut block =
             Block::new().title(title).border_type(BorderType::Thicker);
         block.add_child("".to_span(), Constrain::Length(1));
         block.add_child("".to_span(), Constrain::Fill);
-        block.add_child(time_layout(time), Constrain::Min(0));
+        block
+            .add_child(time_layout(time, self.decimals), Constrain::Length(5));
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();

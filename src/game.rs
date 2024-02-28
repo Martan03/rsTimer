@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    num_parser::time_layout, stats_manager::StatsManager, timer::Timer,
-};
+use crate::{asci::time_layout, stats_manager::StatsManager, timer::Timer};
 
 use crossterm::{
     event::{poll, read, Event, KeyCode},
@@ -17,8 +15,6 @@ use termint::{
         span::StrSpanExtension,
     },
 };
-
-use crate::num_parser::get_time;
 
 pub struct Game {
     timer: Timer,
@@ -108,8 +104,10 @@ impl Game {
 
         block.add_child(self.scramble_layout(), Constrain::Length(1));
         block.add_child("".to_span(), Constrain::Fill);
-        let time = get_time(self.timer.get_time().as_secs_f64(), 3);
-        block.add_child(time_layout(&time), Constrain::Min(0));
+        block.add_child(
+            time_layout(self.timer.get_time().as_secs_f64(), 3),
+            Constrain::Length(5),
+        );
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();

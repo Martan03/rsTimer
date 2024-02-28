@@ -1,0 +1,50 @@
+use termint::{
+    enums::wrap::Wrap,
+    geometry::constrain::Constrain,
+    widgets::{layout::Layout, span::StrSpanExtension},
+};
+
+use self::digits::get_digits;
+
+pub mod digits;
+
+/// Gets time as string created using asci numbers
+///
+/// **Parameters:**
+/// * `num` - number to be converted
+/// * `decimals` - number of decimals
+///
+/// **Returns:**
+/// * Number converted to asci
+pub fn get_time(num: f64, decimals: usize) -> String {
+    let digits = get_digits();
+    let number = format!("{:.1$}", num, decimals);
+    let mut res = String::new();
+
+    for i in 0..5 {
+        for digit in number.chars() {
+            res.push_str(digits[&digit][i]);
+        }
+    }
+    res
+}
+
+/// Creates layout containing centered asci time (needs to be 5 height)
+///
+/// **Parameters:**
+/// * `num` - number to be added to the layout
+/// * `decimals` - number of decimals places to show
+///
+/// **Returns:**
+/// - Time [`Layout`] with centered time
+pub fn time_layout(num: f64, decimals: usize) -> Layout {
+    let span = get_time(num, decimals)
+        .to_span()
+        .wrap(Wrap::Letter)
+        .ellipsis("");
+    let mut layout = Layout::horizontal();
+    layout.add_child("".to_span(), Constrain::Fill);
+    layout.add_child(span, Constrain::Min(0));
+    layout.add_child("".to_span(), Constrain::Fill);
+    layout
+}

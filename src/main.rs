@@ -16,9 +16,8 @@ use crate::{
 };
 
 mod args;
-mod digits;
+mod asci;
 mod game;
-mod num_parser;
 mod scramble;
 mod scrambles;
 mod stats_manager;
