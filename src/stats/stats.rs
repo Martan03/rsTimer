@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::stats::session::Session;
 use crate::stats::stat::Stat;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Stats {
     pub sessions: HashMap<String, Session>,
 }

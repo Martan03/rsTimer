@@ -3,8 +3,8 @@ use std::time::Duration;
 use chrono::{offset, DateTime, Local};
 use serde::{Deserialize, Serialize};
 
-// Statistic struct
-#[derive(Serialize, Deserialize, Clone)]
+/// Stat struct containing information about solve
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Stat {
     pub time: Duration,
     scramble: String,
@@ -45,7 +45,7 @@ mod stat_date_format {
 }
 
 impl Stat {
-    /// Stat constructor
+    /// Creates new [`Stat`]
     ///
     /// **Parameters:**
     /// * `time` - duration it took to solve the cube
@@ -53,7 +53,7 @@ impl Stat {
     /// * `comment` - comment to be added to this solve in stats
     ///
     /// **Returns:**
-    /// * Created stat
+    /// * Created [`Stat`]
     pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
         Stat {
             time,

@@ -11,13 +11,13 @@ use termint::{
 };
 
 use crate::{
-    args::ArgParser, gameloop::Game, stats::stats::Stats,
+    args::ArgParser, game::Game, stats::stats::Stats,
     stats_manager::StatsManager,
 };
 
 mod args;
 mod digits;
-mod gameloop;
+mod game;
 mod num_parser;
 mod scramble;
 mod scrambles;
