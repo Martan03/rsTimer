@@ -28,7 +28,8 @@ You can check other usage cases in help:
 ## Technologies:
 
 Since this was my **first project** in Rust, I used more libraries then I had
-to. You can check all the libraries in `Cargo.toml` file.
+to *(I refactored it a bit already)*. You can check all the libraries in
+`Cargo.toml` file.
 
 Just to mention some libraries I used
 [termint](https://github.com/Martan03/termint) for printing (my library :) )
