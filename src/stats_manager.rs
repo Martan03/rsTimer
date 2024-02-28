@@ -16,8 +16,7 @@ use termint::{
 };
 
 use crate::{
-    scramble::Scramble,
-    scrambles::get_scramble,
+    scramble::{scrambles::get_scramble, Scramble},
     stats::{stat::Stat, stats::Stats},
 };
 

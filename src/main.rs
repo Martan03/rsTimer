@@ -19,7 +19,6 @@ mod args;
 mod asci;
 mod game;
 mod scramble;
-mod scrambles;
 mod stats_manager;
 #[allow(clippy::module_inception)]
 mod stats {
