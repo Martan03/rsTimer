@@ -114,7 +114,7 @@ impl Game {
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();
-        term.render(block).map_err(|e| Report::msg(e))
+        term.render(block).map_err(Report::msg)
     }
 
     /// Gets scramble layout

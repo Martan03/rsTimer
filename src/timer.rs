@@ -1,7 +1,5 @@
-use crossterm::{
-    event::{poll, read, Event, KeyCode},
-    Result,
-};
+use crossterm::event::{poll, read, Event, KeyCode};
+use eyre::{Report, Result};
 use std::time::{Duration, Instant};
 use termint::{
     geometry::constrain::Constrain,
@@ -36,26 +34,40 @@ impl Timer {
     /// Starts timer, prints it periodically, stops when space pressed
     ///
     /// **Result:**
-    /// * Ok() on success, else Err
+    /// * Ok() on success, else Err with corresponding error message
     pub fn start_timer(&mut self, title: &str) -> Result<()> {
-        self.render(title, 0.0);
+        self.render(title, 0.0)?;
 
+        let wait_time = Duration::from_secs_f64(
+            1. / 10_usize.pow(self.decimals as u32) as f64,
+        );
         let start = Instant::now();
-        self.running = true;
 
-        // Timer loop
+        let mut last = start;
+        self.running = true;
         while self.running {
             self.key_listener()?;
-            self.render(title, start.elapsed().as_secs_f64());
+            if last.elapsed() >= wait_time {
+                self.render(title, start.elapsed().as_secs_f64())?;
+                last = Instant::now();
+            }
         }
 
         self.time = start.elapsed();
-        self.render(title, start.elapsed().as_secs_f64());
+        self.render(title, start.elapsed().as_secs_f64())?;
 
         Ok(())
     }
 
-    fn render(&self, title: &str, time: f64) {
+    pub fn get_time(&self) -> Duration {
+        self.time
+    }
+}
+
+// Private methods implementaions
+impl Timer {
+    /// Renders timer when running
+    fn render(&self, title: &str, time: f64) -> Result<()> {
         print!("\x1b[2J");
 
         let mut block =
@@ -67,13 +79,10 @@ impl Timer {
         block.add_child("".to_span(), Constrain::Fill);
 
         let term = Term::new();
-        _ = term.render(block);
+        term.render(block).map_err(Report::msg)
     }
 
     /// Listens to key presses and reacts to it
-    ///
-    /// **Returns:**
-    /// * Ok() on success, else Err
     fn key_listener(&mut self) -> Result<()> {
         if poll(Duration::from_millis(1))? {
             let event = read()?;
@@ -84,9 +93,5 @@ impl Timer {
         }
 
         Ok(())
-    }
-
-    pub fn get_time(&self) -> Duration {
-        self.time
     }
 }
