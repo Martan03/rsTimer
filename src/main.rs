@@ -116,11 +116,24 @@ fn help() {
         "rsTimer".fg(Fg::Green),
         Grad::new("Martan03", (0, 220, 255), (175, 80, 255))
     );
+    println!("{}", "Usage:".fg(Fg::Green));
+    println!(
+        "  {}\n    opens session picker to choose which one to open\n",
+        "rstimer".fg(Fg::White)
+    );
+    println!(
+        "  {}\n    opens timer with given session\n",
+        "rstimer [session name]".fg(Fg::White)
+    );
+    println!(
+        "  {}\n    behaves according to flags\n",
+        "rstimer [flags]".fg(Fg::White)
+    );
     help!(
-        "Usage":
-        "\n-h --help" => "Displays this help"
-        "\n-l --list" => "Lists all sessions"
-        "\n-a --add" => "Opens dialog to add new session"
+        "Flags":
+        "-h --help" => "Displays this help\n"
+        "-l --list" => "Lists all sessions\n"
+        "-a --add" => "Opens dialog to add new session"
     );
 }
 
