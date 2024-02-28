@@ -341,6 +341,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "rstimer"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "crossterm",
+ "dirs",
+ "eyre",
+ "rand",
+ "serde",
+ "serde_json",
+ "termint",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -478,20 +492,6 @@ dependencies = [
  "libc",
  "wasi 0.10.0+wasi-snapshot-preview1",
  "winapi",
-]
-
-[[package]]
-name = "timer"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "crossterm",
- "dirs",
- "eyre",
- "rand",
- "serde",
- "serde_json",
- "termint",
 ]
 
 [[package]]

@@ -49,7 +49,7 @@ fn main() -> Result<()> {
             _ => {
                 // Invalid usage if scramble type already specified
                 if session != *"" {
-                    invalid_usage("multiple scramble types");
+                    invalid_usage("multiple sessions provided");
                     std::process::exit(1);
                 }
                 session = arg;
