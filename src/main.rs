@@ -1,5 +1,5 @@
 use std::{
-    env,
+    env::args,
     io::{stdin, stdout, Write},
 };
 
@@ -11,9 +11,11 @@ use termint::{
 };
 
 use crate::{
-    gameloop::Game, stats::stats::Stats, stats_manager::StatsManager,
+    args::ArgParser, gameloop::Game, stats::stats::Stats,
+    stats_manager::StatsManager,
 };
 
+mod args;
 mod digits;
 mod gameloop;
 mod num_parser;
@@ -28,50 +30,54 @@ mod stats {
 }
 mod timer;
 
-fn main() -> Result<()> {
-    // Parse arguments
-    let mut session = "".to_owned();
-
-    for arg in env::args().skip(1) {
-        match arg.as_str() {
-            "-a" | "--add" => {
-                add_session()?;
-                return Ok(());
-            }
-            "-l" | "--list" => {
-                list_sessions()?;
-                return Ok(());
-            }
-            "-h" | "--help" => {
-                help();
-                return Ok(());
-            }
-            _ => {
-                // Invalid usage if scramble type already specified
-                if session != *"" {
-                    invalid_usage("multiple sessions provided");
-                    std::process::exit(1);
-                }
-                session = arg;
-            }
+fn main() {
+    let arg_parser = match ArgParser::parse(args()) {
+        Ok(arg_parser) => arg_parser,
+        Err(e) => {
+            invalid_usage(e.to_string().as_str());
+            return;
         }
-    }
-
-    // Saves screen, clears screen and hides cursor
-    print!("\x1b[?1049h\x1b[2J\x1b[?25l");
-
-    let stats_manager = if session == *"" {
-        StatsManager::session_picker()?
-    } else {
-        StatsManager::open_session(&session)?
     };
 
-    // Start the app
-    let mut game = Game::new(stats_manager)?;
-    game.start_game()?;
+    if let Err(e) = run(arg_parser) {
+        err_print(e.to_string().as_str());
+    }
+}
 
-    // Restores screen
-    print!("\x1b[?1049l\x1b[?25h");
+/// Runs the app based on arguments
+fn run(arg_parser: ArgParser) -> Result<()> {
+    if arg_parser.help {
+        help();
+    } else if arg_parser.add {
+        add_session()?;
+    } else if arg_parser.list {
+        list_sessions()?;
+    } else {
+        // Saves screen, clears screen and hides cursor
+        print!("\x1b[?1049h\x1b[2J\x1b[?25l");
+
+        let res = run_timer(arg_parser.session);
+
+        // Restores screen
+        print!("\x1b[?1049l\x1b[?25h");
+        stdout().flush()?;
+        return res;
+    }
+
+    Ok(())
+}
+
+/// Runs timer - open session is empty, opens session picker
+/// * `arg_parser` - session to be opened
+fn run_timer(session: String) -> Result<()> {
+    let stats = if session.is_empty() {
+        StatsManager::picker()?
+    } else {
+        StatsManager::open(&session)?
+    };
+
+    let mut game = Game::new(stats)?;
+    game.start_game()?;
 
     Ok(())
 }
@@ -120,8 +126,14 @@ fn help() {
     );
 }
 
-/// Prints invalid usage message
-/// * 'msg' - message
+/// Prints error message to stderr
+/// * `msg` - error message
+fn err_print(msg: &str) {
+    eprintln!("{} {msg}", "Error:".fg(Fg::Red));
+}
+
+/// Prints invalid usage message to stderr
+/// * `msg` - error message
 fn invalid_usage(msg: &str) {
     eprintln!(
         "{} {msg}. Type {} to display help",

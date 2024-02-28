@@ -35,7 +35,7 @@ impl StatsManager {
     ///
     /// **Returns:**
     /// * Ok() on success, else Err()
-    pub fn open_session(name: &str) -> Result<StatsManager> {
+    pub fn open(name: &str) -> Result<StatsManager> {
         let stats = Stats::load()?;
 
         if !stats.exists(name) {
@@ -56,7 +56,7 @@ impl StatsManager {
         Err(Report::msg("Error: scramble type not found"))
     }
 
-    pub fn session_picker() -> Result<StatsManager> {
+    pub fn picker() -> Result<StatsManager> {
         let stats = Stats::load()?;
         let sessions = stats.get_sessions();
         let (session, mut cur): (String, Option<usize>) =
