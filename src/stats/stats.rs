@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use dirs::config_dir;
 //use chrono::{offset, DateTime, Local};
 //use dirs::config_dir;
 use eyre::{Report, Result};
@@ -58,6 +59,17 @@ impl Stats {
             Ok(())
         } else {
             Err(Report::msg("Error: non existing session"))
+        }
+    }
+
+    /// Removes [`Stat`] from given [`Session`]
+    ///
+    /// **Parameters:**
+    /// * `index` - index of [`Stat`] to be removed
+    /// * `session` - name of the [`Session`] to remove [`Stat`] from
+    pub fn remove(&mut self, index: usize, session: &str) {
+        if let Some(session) = self.sessions.get_mut(session) {
+            session.remove(index);
         }
     }
 
@@ -122,16 +134,13 @@ impl Stats {
 impl Stats {
     /// Gets the directory to save stats in
     fn get_stats_dir() -> Result<String> {
-        Ok("./stats".to_owned())
-        /* For debugging purposes stats directory will be in code directory
         let config =
-        config_dir().ok_or(Report::msg("Can't get stats directory"))?;
+            config_dir().ok_or(Report::msg("Can't get stats directory"))?;
 
         Ok(config
             .to_str()
             .ok_or(Report::msg("Invalid path to stats"))?
             .to_owned()
             + "/rstimer/stats")
-        */
     }
 }

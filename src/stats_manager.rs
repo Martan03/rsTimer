@@ -12,7 +12,9 @@ use eyre::{Report, Result};
 use termint::{
     geometry::constrain::Constrain,
     term::Term,
-    widgets::{block::Block, border::BorderType, list::List},
+    widgets::{
+        block::Block, border::BorderType, list::List, span::StrSpanExtension,
+    },
 };
 
 use crate::{
@@ -68,7 +70,7 @@ impl StatsManager {
 
         enable_raw_mode()?;
 
-        mngr.render_session_pick(cur);
+        mngr.session_pick_render(cur)?;
         let mut con = true;
         while con {
             if poll(Duration::from_millis(100))? {
@@ -98,20 +100,19 @@ impl StatsManager {
     ///
     /// **Returns:**
     /// Ok(bool) on success - true to exit app - else Err()
-    pub fn open_stats(&self) -> Result<bool> {
+    pub fn open_stats(&mut self, exit: &mut bool) -> Result<()> {
         let mut cur = Some(0_usize);
         let mut con = true;
 
-        // TODO remove unwrap
-        self.display_stats(cur.unwrap());
+        self.stats_render(cur)?;
 
         while con {
             if poll(Duration::from_millis(100))? {
-                self.stats_listen(&mut cur, &mut con);
+                self.stats_listen(&mut cur, &mut con, exit)?;
             }
         }
 
-        Ok(false)
+        Ok(())
     }
 
     /// Adds time to active session
@@ -154,7 +155,7 @@ impl StatsManager {
             KeyCode::Up => {
                 if let Some(val) = cur {
                     *cur = Some(val.saturating_sub(1));
-                    self.render_session_pick(*cur);
+                    self.session_pick_render(*cur)?;
                 }
             }
             // Moves list selection one item down
@@ -162,7 +163,7 @@ impl StatsManager {
                 if let Some(val) = cur {
                     if *val + 1 < self.stats.get_sessions().len() {
                         *cur = Some(*val + 1);
-                        self.render_session_pick(*cur);
+                        self.session_pick_render(*cur)?;
                     }
                 }
             }
@@ -175,36 +176,27 @@ impl StatsManager {
     }
 
     /// Renders session picker
-    fn render_session_pick(&self, cur: Option<usize>) {
+    fn session_pick_render(&self, cur: Option<usize>) -> Result<()> {
         let mut block = Block::new()
             .title("Sessions")
             .border_type(BorderType::Thicker);
 
         let keys = self.stats.get_sessions();
-        let sessions: Vec<&str> = keys.iter().map(|v| v.as_str()).collect();
-        let static_sessions = unsafe { mem::transmute(sessions) };
+        if keys.is_empty() {
+            block.add_child("No sessions...".to_span(), Constrain::Fill);
+        } else {
+            let sessions: Vec<&str> =
+                keys.iter().map(|v| v.as_str()).collect();
+            let static_sessions = unsafe { mem::transmute(sessions) };
 
-        let list = List::new(static_sessions).current(cur);
-        block.add_child(list, Constrain::Fill);
+            let list = List::new(static_sessions).current(cur);
+            block.add_child(list, Constrain::Fill);
+        }
 
         let term = Term::new();
         print!("\x1b[H\x1b[J");
-        _ = term.render(block);
-        _ = stdout().flush();
-    }
-
-    /// Displays stats of active session
-    fn display_stats(&self, active_stat: usize) {
-        println!("\x1b[2J\x1b[H\x1b[92mStats:\x1b[0m");
-
-        for (i, stat) in
-            self.stats.sessions[&self.session].stats.iter().enumerate()
-        {
-            if active_stat == i {
-                print!("\x1b[093m");
-            }
-            println!("\x1b[0G{:.3}\x1b[0m", stat.time.as_secs_f64());
-        }
+        term.render(block).map_err(Report::msg)?;
+        Ok(stdout().flush()?)
     }
 
     /// Displays sessions
@@ -221,21 +213,20 @@ impl StatsManager {
 
     /// Listens to key presses and reacts to it while stats window is active
     fn stats_listen(
-        &self,
+        &mut self,
         cur: &mut Option<usize>,
         con: &mut bool,
-    ) -> Result<bool> {
+        exit: &mut bool,
+    ) -> Result<()> {
         let Event::Key(KeyEvent { code, .. }) = read()? else {
-            return Ok(false);
+            return Ok(());
         };
 
         match code {
-            KeyCode::Tab => return Ok(false),
             KeyCode::Up => {
                 if let Some(val) = cur {
                     *cur = Some(val.saturating_sub(1));
-                    // TODO add rerender
-                    // self.render_stats(*cur);
+                    self.stats_render(*cur)?;
                 }
             }
             KeyCode::Down => {
@@ -244,15 +235,45 @@ impl StatsManager {
                         < self.stats.sessions[&self.session].stats.len()
                     {
                         *cur = Some(*val + 1);
-                        // TODO add re-render
+                        self.stats_render(*cur)?;
                     }
                 }
             }
+            KeyCode::Delete => {
+                if let Some(val) = *cur {
+                    self.stats.remove(val, &self.session);
+                    self.stats_render(*cur)?;
+                }
+            }
+            KeyCode::Tab => *con = false,
             KeyCode::Esc => {
-                // TODO
+                *exit = true;
+                *con = false;
             }
             _ => {}
         }
-        Ok(false)
+        Ok(())
+    }
+
+    /// Renders sessions stats
+    fn stats_render(&self, cur: Option<usize>) -> Result<()> {
+        let mut block =
+            Block::new().title("Stats").border_type(BorderType::Thicker);
+
+        let stats: Vec<String> = self.stats.sessions[&self.session]
+            .stats
+            .iter()
+            .map(|i| format!("{:.3}", i.time.as_secs_f64()))
+            .collect();
+        let times: Vec<&str> = stats.iter().map(|v| v.as_str()).collect();
+        let static_times = unsafe { mem::transmute(times) };
+
+        let list = List::new(static_times).current_scroll(cur);
+        block.add_child(list, Constrain::Fill);
+
+        let term = Term::new();
+        print!("\x1b[H\x1b[J");
+        term.render(block).map_err(Report::msg)?;
+        Ok(stdout().flush()?)
     }
 }

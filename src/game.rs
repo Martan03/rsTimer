@@ -32,7 +32,7 @@ impl Game {
     /// * Constructed [`Game`] in Result
     pub fn new(stats_manager: StatsManager) -> Self {
         Self {
-            timer: Timer::new(3),
+            timer: Timer::new(),
             started: false,
             stats_manager,
         }
@@ -82,7 +82,9 @@ impl Game {
             KeyCode::Char('s') => self.stats_manager.open_session_list(),
             // Displays sesssion stats
             KeyCode::Tab => {
-                if self.stats_manager.open_stats()? {
+                let mut exit = false;
+                self.stats_manager.open_stats(&mut exit)?;
+                if exit {
                     self.started = false;
                     self.stats_manager.stats.save()?;
                 }

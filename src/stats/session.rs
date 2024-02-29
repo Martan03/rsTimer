@@ -31,4 +31,14 @@ impl Session {
     pub fn add(&mut self, stat: Stat) {
         self.stats.push(stat);
     }
+
+    /// Removes [`Stat`] from [`Session`]
+    ///
+    /// **Parameters:**
+    /// * `index` - index of [`Stat`] to be removed from [`Session`]
+    pub fn remove(&mut self, index: usize) {
+        if index < self.stats.len() {
+            self.stats.remove(index);
+        }
+    }
 }

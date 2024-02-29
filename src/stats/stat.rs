@@ -10,7 +10,7 @@ pub struct Stat {
     scramble: String,
     comment: String,
     #[serde(with = "stat_date_format")]
-    datetime: DateTime<Local>,
+    pub datetime: DateTime<Local>,
 }
 
 impl Stat {
