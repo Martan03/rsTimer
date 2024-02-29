@@ -29,7 +29,7 @@ impl Session {
     /// **Parameters:**
     /// * `stat` - [`Stat`] to be stored in [`Session`]
     pub fn add(&mut self, stat: Stat) {
-        self.stats.push(stat);
+        self.stats.insert(0, stat);
     }
 
     /// Removes [`Stat`] from [`Session`]
