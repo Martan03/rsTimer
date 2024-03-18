@@ -8,12 +8,9 @@ use crossterm::{
 };
 use eyre::{Report, Result};
 use termint::{
-    geometry::constrain::Constrain,
+    geometry::{constrain::Constrain, text_align::TextAlign},
     term::Term,
-    widgets::{
-        block::Block, border::BorderType, layout::Layout,
-        span::StrSpanExtension,
-    },
+    widgets::{block::Block, border::BorderType, span::StrSpanExtension},
 };
 
 pub struct Game {
@@ -107,7 +104,10 @@ impl Game {
             .title(self.stats_manager.session.as_str())
             .border_type(BorderType::Thicker);
 
-        block.add_child(self.scramble_layout(), Constrain::Length(1));
+        block.add_child(
+            self.stats_manager.scramble.get().align(TextAlign::Center),
+            Constrain::Min(0),
+        );
         block.add_child("".to_span(), Constrain::Fill);
         block.add_child(
             time_layout(self.timer.get_time().as_secs_f64(), 3),
@@ -117,17 +117,5 @@ impl Game {
 
         let term = Term::new();
         term.render(block).map_err(Report::msg)
-    }
-
-    /// Gets scramble layout
-    fn scramble_layout(&mut self) -> Layout {
-        let mut layout = Layout::horizontal();
-        layout.add_child("".to_span(), Constrain::Fill);
-        layout.add_child(
-            self.stats_manager.scramble.get().to_span(),
-            Constrain::Min(0),
-        );
-        layout.add_child("".to_span(), Constrain::Fill);
-        layout
     }
 }

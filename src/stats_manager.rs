@@ -1,6 +1,5 @@
 use std::{
     io::{stdout, Write},
-    mem,
     time::Duration,
 };
 
@@ -12,9 +11,7 @@ use eyre::{Report, Result};
 use termint::{
     geometry::constrain::Constrain,
     term::Term,
-    widgets::{
-        block::Block, border::BorderType, list::List, span::StrSpanExtension,
-    },
+    widgets::{block::Block, border::BorderType, list::List},
 };
 
 use crate::{
@@ -104,7 +101,7 @@ impl StatsManager {
         let mut cur = Some(0_usize);
         let mut con = true;
 
-        self.stats_render(cur)?;
+        self.stats_render(cur, None)?;
 
         while con {
             if poll(Duration::from_millis(100))? {
@@ -183,13 +180,9 @@ impl StatsManager {
 
         let keys = self.stats.get_sessions();
         if keys.is_empty() {
-            block.add_child("No sessions...".to_span(), Constrain::Fill);
+            block.add_child("No sessions...", Constrain::Fill);
         } else {
-            let sessions: Vec<&str> =
-                keys.iter().map(|v| v.as_str()).collect();
-            let static_sessions = unsafe { mem::transmute(sessions) };
-
-            let list = List::new(static_sessions).current(cur);
+            let list = List::new(keys).current(cur);
             block.add_child(list, Constrain::Fill);
         }
 
@@ -224,25 +217,24 @@ impl StatsManager {
 
         match code {
             KeyCode::Up => {
-                if let Some(val) = cur {
+                if let Some(val) = *cur {
                     *cur = Some(val.saturating_sub(1));
-                    self.stats_render(*cur)?;
+                    self.stats_render(*cur, Some(val))?;
                 }
             }
             KeyCode::Down => {
-                if let Some(val) = cur {
-                    if *val + 1
-                        < self.stats.sessions[&self.session].stats.len()
+                if let Some(val) = *cur {
+                    if val + 1 < self.stats.sessions[&self.session].stats.len()
                     {
-                        *cur = Some(*val + 1);
-                        self.stats_render(*cur)?;
+                        *cur = Some(val + 1);
+                        self.stats_render(*cur, Some(val))?;
                     }
                 }
             }
             KeyCode::Delete => {
                 if let Some(val) = *cur {
                     self.stats.remove(val, &self.session);
-                    self.stats_render(*cur)?;
+                    self.stats_render(*cur, Some(val))?;
                 }
             }
             KeyCode::Tab => *con = false,
@@ -256,7 +248,11 @@ impl StatsManager {
     }
 
     /// Renders sessions stats
-    fn stats_render(&self, cur: Option<usize>) -> Result<()> {
+    fn stats_render(
+        &self,
+        cur: Option<usize>,
+        prev: Option<usize>,
+    ) -> Result<()> {
         let mut block =
             Block::new().title("Stats").border_type(BorderType::Thicker);
 
@@ -265,10 +261,9 @@ impl StatsManager {
             .iter()
             .map(|i| format!("{:.3}", i.time.as_secs_f64()))
             .collect();
-        let times: Vec<&str> = stats.iter().map(|v| v.as_str()).collect();
-        let static_times = unsafe { mem::transmute(times) };
 
-        let list = List::new(static_times).current_scroll(cur);
+        let prev = prev.unwrap_or(0);
+        let list = List::new(stats).current(cur).to_current(prev);
         block.add_child(list, Constrain::Fill);
 
         let term = Term::new();

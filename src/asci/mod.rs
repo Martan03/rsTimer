@@ -1,7 +1,7 @@
 use termint::{
     enums::wrap::Wrap,
     geometry::constrain::Constrain,
-    widgets::{layout::Layout, span::StrSpanExtension},
+    widgets::{grad::Grad, layout::Layout},
 };
 
 use self::digits::get_digits;
@@ -38,13 +38,10 @@ pub fn get_time(num: f64, decimals: usize) -> String {
 /// **Returns:**
 /// - Time [`Layout`] with centered time
 pub fn time_layout(num: f64, decimals: usize) -> Layout {
-    let span = get_time(num, decimals)
-        .to_span()
-        .wrap(Wrap::Letter)
-        .ellipsis("");
-    let mut layout = Layout::horizontal();
-    layout.add_child("".to_span(), Constrain::Fill);
-    layout.add_child(span, Constrain::Min(0));
-    layout.add_child("".to_span(), Constrain::Fill);
+    let grad =
+        Grad::new(get_time(num, decimals), (0, 220, 255), (160, 100, 255))
+            .wrap(Wrap::Letter);
+    let mut layout = Layout::horizontal().center();
+    layout.add_child(grad, Constrain::Min(0));
     layout
 }
