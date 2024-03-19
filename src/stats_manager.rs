@@ -262,9 +262,13 @@ impl StatsManager {
             .map(|i| format!("{:.3}", i.time.as_secs_f64()))
             .collect();
 
-        let prev = prev.unwrap_or(0);
-        let list = List::new(stats).current(cur).to_current(prev);
-        block.add_child(list, Constrain::Fill);
+        if stats.is_empty() {
+            block.add_child("Not times set yet...", Constrain::Fill);
+        } else {
+            let prev = prev.unwrap_or(0);
+            let list = List::new(stats).current(cur).to_current(prev);
+            block.add_child(list, Constrain::Fill);
+        }
 
         let term = Term::new();
         print!("\x1b[H\x1b[J");
