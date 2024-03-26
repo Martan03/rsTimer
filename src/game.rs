@@ -10,7 +10,10 @@ use eyre::{Report, Result};
 use termint::{
     geometry::{constrain::Constrain, text_align::TextAlign},
     term::Term,
-    widgets::{block::Block, border::BorderType, span::StrSpanExtension},
+    widgets::{
+        block::Block, border::BorderType, spacer::Spacer,
+        span::StrSpanExtension,
+    },
 };
 
 pub struct Game {
@@ -108,12 +111,12 @@ impl Game {
             self.stats_manager.scramble.get().align(TextAlign::Center),
             Constrain::Min(0),
         );
-        block.add_child("".to_span(), Constrain::Fill);
+        block.add_child(Spacer::new(), Constrain::Fill);
         block.add_child(
             time_layout(self.timer.get_time().as_secs_f64(), 3),
             Constrain::Length(5),
         );
-        block.add_child("".to_span(), Constrain::Fill);
+        block.add_child(Spacer::new(), Constrain::Fill);
 
         let term = Term::new();
         term.render(block).map_err(Report::msg)
