@@ -182,7 +182,7 @@ impl StatsManager {
         if keys.is_empty() {
             block.add_child("No sessions...", Constrain::Fill);
         } else {
-            let list = List::new(keys).current(cur);
+            let list = List::new(keys).selected(cur);
             block.add_child(list, Constrain::Fill);
         }
 
@@ -266,7 +266,7 @@ impl StatsManager {
             block.add_child("Not times set yet...", Constrain::Fill);
         } else {
             let prev = prev.unwrap_or(0);
-            let list = List::new(stats).current(cur).to_current(prev);
+            let list = List::new(stats).selected(cur).to_current(prev);
             block.add_child(list, Constrain::Fill);
         }
 
