@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use dirs::config_dir;
 //use chrono::{offset, DateTime, Local};
 //use dirs::config_dir;
-use eyre::{Report, Result};
 use serde::{Deserialize, Serialize};
 
+use crate::error::Error;
 use crate::stats::session::Session;
 use crate::stats::stat::Stat;
 
@@ -16,29 +16,26 @@ pub struct Stats {
 
 impl Stats {
     /// Loads stats from JSON file
-    ///
-    /// **Returns:**
-    /// * Loaded stats in Result - contains error message on error
-    pub fn load() -> Result<Stats> {
-        let stats = match std::fs::read_to_string(Stats::get_stats_dir()?) {
+    pub fn load() -> Stats {
+        match std::fs::read_to_string(
+            Stats::get_stats_dir().unwrap_or(".".to_string()),
+        ) {
             Err(_) => Stats {
                 sessions: HashMap::new(),
             },
-            Ok(s) => serde_json::from_str::<Stats>(&s)?,
-        };
-        Ok(stats)
+            Ok(s) => serde_json::from_str::<Stats>(&s).unwrap_or(Stats {
+                sessions: HashMap::new(),
+            }),
+        }
     }
 
     /// Saves stats to json file
-    ///
-    /// **Returns:**
-    /// * Ok() on success, else Err with corresponding error message
-    pub fn save(&self) -> Result<()> {
+    pub fn save(&self) -> Result<(), Error> {
         let filename = Stats::get_stats_dir()?;
         let path = std::path::Path::new(&filename);
         let prefix = path
             .parent()
-            .ok_or(Report::msg("Error creating stats directory"))?;
+            .ok_or(Error::Msg("Error creating stats directory".to_string()))?;
         std::fs::create_dir_all(prefix)?;
         std::fs::File::create(path)?;
 
@@ -49,24 +46,16 @@ impl Stats {
     }
 
     /// Adds given stat to the stats of given session
-    ///
-    /// **Parameters:**
-    /// * `stat` - stat to be added
-    /// * `session` - session name
-    pub fn add(&mut self, stat: Stat, session: &str) -> Result<()> {
+    pub fn add(&mut self, stat: Stat, session: &str) -> Result<(), Error> {
         if let Some(session) = self.sessions.get_mut(session) {
             session.add(stat);
             Ok(())
         } else {
-            Err(Report::msg("Error: non existing session"))
+            Err(Error::Msg("non existing session".to_string()))
         }
     }
 
     /// Removes [`Stat`] from given [`Session`]
-    ///
-    /// **Parameters:**
-    /// * `index` - index of [`Stat`] to be removed
-    /// * `session` - name of the [`Session`] to remove [`Stat`] from
     pub fn remove(&mut self, index: usize, session: &str) {
         if let Some(session) = self.sessions.get_mut(session) {
             session.remove(index);
@@ -74,20 +63,15 @@ impl Stats {
     }
 
     /// Adds given session to the stats
-    ///
-    /// **Parameters:**
-    /// * `session` - name of the session
-    /// * `scramble_type` - type of the scramble
-    ///
-    /// **Returns:**
-    /// * Ok on success, else Err with corresponding error message
     pub fn add_session(
         &mut self,
         session: &str,
         scramble_type: &str,
-    ) -> Result<()> {
+    ) -> Result<(), Error> {
         if self.exists(session) {
-            Err(Report::msg("Error: session with this name already exists"))
+            Err(Error::Msg(
+                "session with this name already exists".to_string(),
+            ))
         } else {
             self.sessions
                 .insert(session.to_owned(), Session::new(scramble_type));
@@ -96,21 +80,15 @@ impl Stats {
     }
 
     pub fn get_session(&self, name: &str) -> Option<&Session> {
-        return self.sessions.get(name);
+        self.sessions.get(name)
     }
 
     /// Gets all session names
-    ///
-    /// **Returns:**
-    /// * Vector containing all session names
     pub fn get_sessions(&self) -> Vec<String> {
         self.sessions.keys().map(|v| v.to_string()).collect()
     }
 
     /// Checks whether session exists
-    ///
-    /// **Returns:**
-    /// * True when exists, else falses
     pub fn exists(&self, session: &str) -> bool {
         self.sessions.contains_key(session)
     }
@@ -133,13 +111,13 @@ impl Stats {
 
 impl Stats {
     /// Gets the directory to save stats in
-    fn get_stats_dir() -> Result<String> {
-        let config =
-            config_dir().ok_or(Report::msg("Can't get stats directory"))?;
+    fn get_stats_dir() -> Result<String, Error> {
+        let config = config_dir()
+            .ok_or(Error::Msg("Can't get stats directory".to_string()))?;
 
         Ok(config
             .to_str()
-            .ok_or(Report::msg("Invalid path to stats"))?
+            .ok_or(Error::Msg("Invalid path to stats".to_string()))?
             .to_owned()
             + "/rstimer/stats")
     }

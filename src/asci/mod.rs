@@ -1,7 +1,7 @@
 use termint::{
-    enums::wrap::Wrap,
-    geometry::constrain::Constrain,
-    widgets::{grad::Grad, layout::Layout},
+    enums::Wrap,
+    geometry::Constraint,
+    widgets::{Grad, Layout},
 };
 
 use self::digits::get_digits;
@@ -42,6 +42,6 @@ pub fn time_layout(num: f64, decimals: usize) -> Layout {
         Grad::new(get_time(num, decimals), (0, 220, 255), (160, 100, 255))
             .wrap(Wrap::Letter);
     let mut layout = Layout::horizontal().center();
-    layout.add_child(grad, Constrain::Min(0));
+    layout.add_child(grad, Constraint::Min(0));
     layout
 }

@@ -3,80 +3,54 @@ use std::{
     io::{stdin, stdout, Write},
 };
 
-use eyre::Result;
-use termint::{
-    enums::fg::Fg,
-    help,
-    widgets::{grad::Grad, span::StrSpanExtension},
-};
+use app::App;
+use args::Action;
+use error::Error;
 
-use crate::{
-    args::ArgParser, game::Game, stats::stats::Stats,
-    stats_manager::StatsManager,
-};
+use crate::{args::Args, stats::stats::Stats};
 
+mod app;
 mod args;
 mod asci;
-mod game;
+mod error;
 mod scramble;
 mod stats;
 mod stats_manager;
 mod timer;
 
 fn main() {
-    let arg_parser = match ArgParser::parse(args()) {
-        Ok(arg_parser) => arg_parser,
-        Err(e) => {
-            invalid_usage(e.to_string().as_str());
+    let args = match Args::parse(args()) {
+        Ok(args) => args,
+        Err(_) => {
+            println!("Error parsing arguments");
             return;
         }
     };
 
-    if let Err(e) = run(arg_parser) {
-        err_print(e.to_string().as_str());
-    }
+    _ = run(args);
 }
 
 /// Runs the app based on arguments
-fn run(arg_parser: ArgParser) -> Result<()> {
-    if arg_parser.help {
-        help();
-    } else if arg_parser.add {
-        add_session()?;
-    } else if arg_parser.list {
-        list_sessions()?;
-    } else {
-        // Saves screen, clears screen and hides cursor
-        print!("\x1b[?1049h\x1b[2J\x1b[?25l");
-
-        let res = run_timer(arg_parser.session);
-
-        // Restores screen
-        print!("\x1b[?1049l\x1b[?25h");
-        stdout().flush()?;
-        return res;
+fn run(args: Args) -> Result<(), Error> {
+    match args.action {
+        Some(Action::Add) => add_session(),
+        Some(Action::Help) => Ok(Args::help()),
+        Some(Action::List) => Ok(list_sessions()),
+        None => run_timer(args.session),
     }
-
-    Ok(())
 }
 
-/// Runs timer - open session is empty, opens session picker
-/// * `arg_parser` - session to be opened
-fn run_timer(session: String) -> Result<()> {
-    let stats = if session.is_empty() {
-        StatsManager::picker()?
-    } else {
-        StatsManager::open(&session)?
+/// Starts app - if session is None, it opens session picker
+fn run_timer(session: Option<String>) -> Result<(), Error> {
+    let mut app = match session {
+        Some(session) => App::open(session),
+        None => App::new(),
     };
-
-    let mut game = Game::new(stats);
-    game.start_game()?;
-
-    Ok(())
+    app.run()
 }
 
 /// Add session prompt
-fn add_session() -> Result<()> {
+fn add_session() -> Result<(), Error> {
     println!("Adding session. Please fill out the prompt.");
     print!("Session name: ");
     stdout().flush()?;
@@ -88,7 +62,7 @@ fn add_session() -> Result<()> {
     let mut scramble_type = String::new();
     stdin().read_line(&mut scramble_type)?;
 
-    let mut stats = Stats::load()?;
+    let mut stats = Stats::load();
     stats.add_session(name.trim(), scramble_type.trim())?;
 
     stats.save()?;
@@ -97,53 +71,23 @@ fn add_session() -> Result<()> {
 }
 
 /// Lists all sessions
-fn list_sessions() -> Result<()> {
-    let stats = Stats::load()?;
+fn list_sessions() {
+    let stats = Stats::load();
     stats.print_sessions();
-
-    Ok(())
 }
 
-/// Displays help
-fn help() {
-    println!(
-        "Welcome to help for {} by {}\n",
-        "rsTimer".fg(Fg::Green),
-        Grad::new("Martan03", (0, 220, 255), (175, 80, 255))
-    );
-    println!("{}", "Usage:".fg(Fg::Green));
-    println!(
-        "  {}\n    opens session picker to choose which one to open\n",
-        "rstimer".fg(Fg::White)
-    );
-    println!(
-        "  {}\n    opens timer with given session\n",
-        "rstimer [session name]".fg(Fg::White)
-    );
-    println!(
-        "  {}\n    behaves according to flags\n",
-        "rstimer [flags]".fg(Fg::White)
-    );
-    help!(
-        "Flags":
-        "-h --help" => "Displays this help\n"
-        "-l --list" => "Lists all sessions\n"
-        "-a --add" => "Opens dialog to add new session"
-    );
-}
+// /// Prints error message to stderr
+// /// * `msg` - error message
+// fn err_print(msg: &str) {
+//     eprintln!("{} {msg}", "Error:".fg(Color::Red));
+// }
 
-/// Prints error message to stderr
-/// * `msg` - error message
-fn err_print(msg: &str) {
-    eprintln!("{} {msg}", "Error:".fg(Fg::Red));
-}
-
-/// Prints invalid usage message to stderr
-/// * `msg` - error message
-fn invalid_usage(msg: &str) {
-    eprintln!(
-        "{} {msg}. Type {} to display help",
-        "Invalid usage:".fg(Fg::Red),
-        "rstimer -h".fg(Fg::Yellow)
-    );
-}
+// /// Prints invalid usage message to stderr
+// /// * `msg` - error message
+// fn invalid_usage(msg: &str) {
+//     eprintln!(
+//         "{} {msg}. Type {} to display help",
+//         "Invalid usage:".fg(Color::Red),
+//         "rstimer -h".fg(Color::Yellow)
+//     );
+// }

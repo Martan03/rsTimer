@@ -1,50 +1,84 @@
-use std::env::Args;
+use termint::{
+    enums::Color,
+    help,
+    widgets::{Grad, StrSpanExtension},
+};
 
-use eyre::{Report, Result};
+use crate::error::Error;
 
-/// Parses given arguments and checks for arguments conditions
-pub struct ArgParser {
-    pub help: bool,
-    pub add: bool,
-    pub list: bool,
-    pub session: String,
+#[derive(Debug)]
+pub enum Action {
+    Add,
+    Help,
+    List,
 }
 
-impl ArgParser {
-    /// Parses arguments and creates new [`ArgParser`]
-    /// * `args` - Args to be parsed
-    pub fn parse(args: Args) -> Result<Self> {
-        let mut parser = Self::default();
+/// Parses given arguments and checks for arguments conditions
+#[derive(Debug, Default)]
+pub struct Args {
+    pub action: Option<Action>,
+    pub session: Option<String>,
+}
+
+impl Args {
+    /// Parses arguments
+    pub fn parse(args: std::env::Args) -> Result<Args, Error> {
+        let mut parsed = Self::default();
 
         if args.len() > 2 {
-            return Err(Report::msg("Invalid number of arguments"));
+            return Err(Error::Msg("Invalid number of arguments".to_string()));
         }
 
-        for arg in args.skip(1) {
+        let mut args_iter = args.into_iter();
+        args_iter.next();
+        while let Some(arg) = args_iter.next() {
             match arg.as_str() {
-                "-h" | "--help" => parser.help = true,
-                "-a" | "--add" => parser.add = true,
-                "-l" | "--list" => parser.list = true,
-                _ => {
-                    if !parser.session.is_empty() {
-                        return Err(Report::msg("Multiple sessions provided"));
-                    }
-                    parser.session = arg;
-                }
+                "-h" | "--help" => parsed.set_action(Action::Help)?,
+                "-a" | "--add" => parsed.set_action(Action::Add)?,
+                "-l" | "--list" => parsed.set_action(Action::List)?,
+                name => parsed.set_session(name)?,
             }
         }
 
-        Ok(parser)
+        Ok(parsed)
     }
-}
 
-impl Default for ArgParser {
-    fn default() -> Self {
-        Self {
-            help: false,
-            add: false,
-            list: false,
-            session: "".to_owned(),
+    /// Displays help
+    pub fn help() {
+        println!(
+            "Welcome to help for {} by {}\n",
+            "rsTimer".fg(Color::Green),
+            Grad::new("Martan03", (0, 220, 255), (175, 80, 255))
+        );
+        help!(
+            "Usage":
+            "rstimer" => "Opens session picker to choose which one to open\n"
+            "rstimer" ["session name"] => "Opens timer with given session\n"
+            "rstimer" ["options"] => "Behaves according to options\n"
+            "Options":
+            "-a  --add" => "Opens dialog to add new session\n"
+            "-l  --list" => "Lists all sessions\n"
+            "-h  --help" => "Prints this help"
+        );
+    }
+
+    /// Sets action to given value when is not set already
+    fn set_action(&mut self, action: Action) -> Result<(), Error> {
+        if self.action.is_some() {
+            Err(Error::Msg("multiple actions provided".to_string()))
+        } else {
+            self.action = Some(action);
+            Ok(())
+        }
+    }
+
+    /// Sets session name to given value when is not set already
+    fn set_session(&mut self, name: &str) -> Result<(), Error> {
+        if self.session.is_some() {
+            Err(Error::Msg("multiple sessions provided".to_string()))
+        } else {
+            self.session = Some(name.to_string());
+            Ok(())
         }
     }
 }
