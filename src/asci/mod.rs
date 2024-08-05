@@ -1,3 +1,4 @@
+use digit_type::DigitType;
 use termint::{
     enums::Wrap,
     geometry::Constraint,
@@ -6,6 +7,7 @@ use termint::{
 
 use self::digits::get_digits;
 
+pub mod digit_type;
 pub mod digits;
 
 /// Gets time as string created using asci numbers
@@ -16,17 +18,17 @@ pub mod digits;
 ///
 /// **Returns:**
 /// * Number converted to asci
-pub fn get_time(num: f64, decimals: usize) -> String {
-    let digits = get_digits();
+pub fn get_time(num: f64, decimals: usize) -> (String, usize) {
+    let (digits, height) = get_digits(DigitType::Italic);
     let number = format!("{:.1$}", num, decimals);
     let mut res = String::new();
 
-    for i in 0..5 {
+    for i in 0..height {
         for digit in number.chars() {
             res.push_str(digits[&digit][i]);
         }
     }
-    res
+    (res, height)
 }
 
 /// Creates layout containing centered asci time (needs to be 5 height)
@@ -37,11 +39,11 @@ pub fn get_time(num: f64, decimals: usize) -> String {
 ///
 /// **Returns:**
 /// - Time [`Layout`] with centered time
-pub fn time_layout(num: f64, decimals: usize) -> Layout {
+pub fn time_layout(num: f64, decimals: usize) -> (Layout, usize) {
+    let (time, height) = get_time(num, decimals);
     let grad =
-        Grad::new(get_time(num, decimals), (0, 220, 255), (160, 100, 255))
-            .wrap(Wrap::Letter);
+        Grad::new(time, (0, 220, 255), (160, 100, 255)).wrap(Wrap::Letter);
     let mut layout = Layout::horizontal().center();
     layout.add_child(grad, Constraint::Min(0));
-    layout
+    (layout, height)
 }

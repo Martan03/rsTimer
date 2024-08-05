@@ -10,13 +10,18 @@ use crate::{
     app::{App, Screen},
     asci::time_layout,
     error::Error,
+    stats::stat::Stat,
 };
 
 /// Idle and running timer implementation
 impl App {
     /// Renders timer screen
     pub fn render_timer(&mut self) -> Result<(), Error> {
-        self._render_timer(self.time.as_secs_f64(), "Scramble")
+        let scramble = match &self.scramble {
+            Some(s) => s.get().to_owned(),
+            None => String::new(),
+        };
+        self._render_timer(self.time.as_secs_f64(), &scramble)
     }
 
     /// Listens to pressed keys while showing Timer screen
@@ -24,12 +29,15 @@ impl App {
         match code {
             KeyCode::Tab => self.screen = Screen::Stats,
             KeyCode::Char(' ') => self.start_timer()?,
-            KeyCode::Esc | KeyCode::Char('q') => return Err(Error::Exit),
+            KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                return Err(Error::Exit)
+            }
             _ => {}
         }
         self.render()
     }
 
+    /// Helper function for rendering timer
     fn _render_timer(
         &mut self,
         time: f64,
@@ -42,13 +50,17 @@ impl App {
 
         block.add_child(scramble.align(TextAlign::Center), Constraint::Min(1));
         block.add_child(Spacer::new(), Constraint::Fill);
-        block.add_child(time_layout(time, 3), Constraint::Length(5));
+
+        let (time, height) = time_layout(time, 3);
+        block.add_child(time, Constraint::Length(height));
+
         block.add_child(Spacer::new(), Constraint::Fill);
 
         self.term.render(block)?;
         Ok(())
     }
 
+    /// Stats the running timer loop
     fn start_timer(&mut self) -> Result<(), Error> {
         let start = Instant::now();
 
@@ -67,6 +79,13 @@ impl App {
         }
 
         self.time = start.elapsed();
+        if let Some(scramble) = &mut self.scramble {
+            self.stats.add(
+                Stat::new(self.time, scramble.get().to_owned(), String::new()),
+                &self.session.as_ref().unwrap(),
+            )?;
+            scramble.generate();
+        }
         Ok(())
     }
 

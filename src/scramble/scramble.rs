@@ -2,6 +2,7 @@ use rand::{thread_rng, Rng};
 
 /// Scramble struct containing valid moves, current scramble and length
 /// scramble should have
+#[derive(Debug)]
 pub struct Scramble {
     moves: Vec<Vec<&'static str>>,
     scramble: String,
@@ -46,7 +47,7 @@ impl Scramble {
     }
 
     /// Gets scramble
-    pub fn get(&mut self) -> &str {
+    pub fn get(&self) -> &str {
         &self.scramble
     }
 }

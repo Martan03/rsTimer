@@ -17,7 +17,11 @@ use termint::{
     widgets::{Block, BorderType, List, ListState},
 };
 
-use crate::{error::Error, stats::stats::Stats};
+use crate::{
+    error::Error,
+    scramble::{get_scramble, Scramble},
+    stats::stats::Stats,
+};
 
 #[derive(Debug, Clone, Default)]
 pub enum Screen {
@@ -33,9 +37,11 @@ pub struct App {
     pub term: Term,
     pub screen: Screen,
     pub session: Option<String>,
+    pub scramble: Option<Scramble>,
     pub stats: Stats,
     pub time: Duration,
     pub sessions_state: Rc<RefCell<ListState>>,
+    pub stats_state: Rc<RefCell<ListState>>,
 }
 
 impl App {
@@ -46,8 +52,19 @@ impl App {
 
     /// Creates new [`App`] and opens given session
     pub fn open(session: String) -> Self {
+        let stats = Stats::load();
+        let Some(session_info) = stats.get_session(&session) else {
+            return Self::default();
+        };
+
+        let mut scramble = get_scramble(&session_info.scramble_type);
+        scramble.generate();
+
         Self {
             session: Some(session),
+            screen: Screen::Timer,
+            scramble: Some(scramble),
+            stats,
             ..Default::default()
         }
     }
@@ -111,9 +128,11 @@ impl Default for App {
             term: Default::default(),
             screen: Default::default(),
             session: None,
+            scramble: None,
             stats: Stats::load(),
             time: Duration::new(0, 0),
             sessions_state: Rc::new(RefCell::new(ListState::selected(0, 0))),
+            stats_state: Rc::new(RefCell::new(ListState::selected(0, 0))),
         }
     }
 }
@@ -132,7 +151,8 @@ impl App {
         } else {
             block.add_child(
                 List::new(keys, self.sessions_state.clone())
-                    .selected_style(Style::new().fg(Color::Cyan)),
+                    .selected_style(Style::new().fg(Color::Cyan))
+                    .auto_scroll(),
                 Constraint::Fill,
             );
         }
@@ -144,7 +164,7 @@ impl App {
     /// Listens to pressed keys while showing Sessions screen
     fn listen_sessions(&mut self, code: KeyCode) -> Result<(), Error> {
         match code {
-            KeyCode::Up => {
+            KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
                 {
                     let mut state = self.sessions_state.borrow_mut();
                     if let Some(sel) = state.selected {
@@ -154,7 +174,7 @@ impl App {
                 self.term.rerender()?;
                 Ok(())
             }
-            KeyCode::Down => {
+            KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
                 {
                     let mut state = self.sessions_state.borrow_mut();
                     if let Some(sel) = state.selected {
@@ -170,17 +190,31 @@ impl App {
                 let Some(sel) = self.sessions_state.borrow().selected else {
                     return Ok(());
                 };
-                self.session = Some(
-                    self.stats
-                        .get_sessions()
-                        .get(sel)
-                        .ok_or(Error::Msg("getting session".to_string()))?
-                        .to_string(),
-                );
+
+                let session = self
+                    .stats
+                    .get_sessions()
+                    .get(sel)
+                    .ok_or(Error::Msg("getting session".to_string()))?
+                    .to_string();
+
+                let Some(session_info) = self.stats.get_session(&session)
+                else {
+                    return Ok(());
+                };
+
+                let mut scramble = get_scramble(&session_info.scramble_type);
+                scramble.generate();
+                self.scramble = Some(scramble);
+
+                self.session = Some(session);
                 self.screen = Screen::Timer;
+
                 self.render_timer()
             }
-            KeyCode::Esc | KeyCode::Char('q') => Err(Error::Exit),
+            KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                Err(Error::Exit)
+            }
             _ => Ok(()),
         }
     }
@@ -190,9 +224,27 @@ impl App {
     /// Renders Stats screen
     fn render_stats(&mut self) -> Result<(), Error> {
         let name = self.session.clone().unwrap_or("".to_string());
-        let block = Block::vertical()
+        let mut block = Block::vertical()
             .title(format!("{} stats", name).as_str())
             .border_type(BorderType::Thicker);
+
+        let stats: Vec<String> = self.stats.sessions
+            [self.session.as_ref().unwrap()]
+        .stats
+        .iter()
+        .map(|i| format!("{:.3}", i.time.as_secs_f64()))
+        .collect();
+
+        if stats.is_empty() {
+            block.add_child("No times set yet...", Constraint::Fill);
+        } else {
+            block.add_child(
+                List::new(stats, self.stats_state.clone())
+                    .selected_style(Style::new().fg(Color::Cyan))
+                    .auto_scroll(),
+                Constraint::Fill,
+            );
+        }
 
         self.term.render(block)?;
         Ok(())
@@ -201,11 +253,42 @@ impl App {
     /// Listens to pressed keys while showing Stats screen
     fn listen_stats(&mut self, code: KeyCode) -> Result<(), Error> {
         match code {
+            KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
+                {
+                    let mut state = self.stats_state.borrow_mut();
+                    if let Some(sel) = state.selected {
+                        state.selected = Some(sel.saturating_sub(1));
+                    }
+                }
+                self.term.rerender()?;
+                Ok(())
+            }
+            KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
+                {
+                    let mut state = self.stats_state.borrow_mut();
+                    if let Some(sel) = state.selected {
+                        if sel + 1
+                            < self
+                                .stats
+                                .get_session(self.session.as_ref().unwrap())
+                                .unwrap()
+                                .stats
+                                .len()
+                        {
+                            state.selected = Some(sel + 1);
+                        }
+                    }
+                }
+                self.term.rerender()?;
+                Ok(())
+            }
             KeyCode::Tab => {
                 self.screen = Screen::Timer;
                 self.render_timer()
             }
-            KeyCode::Esc | KeyCode::Char('q') => Err(Error::Exit),
+            KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
+                Err(Error::Exit)
+            }
             _ => Ok(()),
         }
     }
