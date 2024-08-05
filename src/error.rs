@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+#[derive(Debug)]
 pub enum Error {
     IOError(std::io::Error),
     SerdeError(serde_json::Error),

@@ -10,14 +10,15 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use termint::{
-    enums::Color,
-    geometry::Constraint,
+    enums::{Color, Modifier},
+    geometry::{Constraint, TextAlign},
     style::Style,
     term::Term,
-    widgets::{Block, BorderType, List, ListState},
+    widgets::{Block, BorderType, Layout, List, ListState, StrSpanExtension},
 };
 
 use crate::{
+    config::Config,
     error::Error,
     scramble::{get_scramble, Scramble},
     stats::stats::Stats,
@@ -35,6 +36,7 @@ pub enum Screen {
 #[derive(Debug)]
 pub struct App {
     pub term: Term,
+    pub config: Config,
     pub screen: Screen,
     pub session: Option<String>,
     pub scramble: Option<Scramble>,
@@ -47,7 +49,10 @@ pub struct App {
 impl App {
     /// Creates new [`App`]
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            term: Term::new().small_screen(App::small_screen()),
+            ..Default::default()
+        }
     }
 
     /// Creates new [`App`] and opens given session
@@ -65,6 +70,7 @@ impl App {
             screen: Screen::Timer,
             scramble: Some(scramble),
             stats,
+            term: Term::new().small_screen(App::small_screen()),
             ..Default::default()
         }
     }
@@ -120,12 +126,28 @@ impl App {
             Screen::Sessions => self.listen_sessions(code),
         }
     }
+
+    fn small_screen() -> Layout {
+        let mut layout = Layout::vertical().center();
+        layout.add_child(
+            "Terminal too small!"
+                .modifier(Modifier::BOLD)
+                .align(TextAlign::Center),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            "You have to increase terminal size".align(TextAlign::Center),
+            Constraint::Min(0),
+        );
+        layout
+    }
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
             term: Default::default(),
+            config: Config::load(),
             screen: Default::default(),
             session: None,
             scramble: None,
@@ -281,6 +303,12 @@ impl App {
                 }
                 self.term.rerender()?;
                 Ok(())
+            }
+            KeyCode::Delete => {
+                if let Some(sel) = self.stats_state.borrow().selected {
+                    self.stats.remove(sel, self.session.as_ref().unwrap());
+                }
+                self.render_stats()
             }
             KeyCode::Tab => {
                 self.screen = Screen::Timer;

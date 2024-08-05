@@ -18,8 +18,12 @@ pub mod digits;
 ///
 /// **Returns:**
 /// * Number converted to asci
-pub fn get_time(num: f64, decimals: usize) -> (String, usize) {
-    let (digits, height) = get_digits(DigitType::Italic);
+pub fn get_time(
+    num: f64,
+    decimals: usize,
+    font: &DigitType,
+) -> (String, usize) {
+    let (digits, height) = get_digits(font);
     let number = format!("{:.1$}", num, decimals);
     let mut res = String::new();
 
@@ -39,8 +43,12 @@ pub fn get_time(num: f64, decimals: usize) -> (String, usize) {
 ///
 /// **Returns:**
 /// - Time [`Layout`] with centered time
-pub fn time_layout(num: f64, decimals: usize) -> (Layout, usize) {
-    let (time, height) = get_time(num, decimals);
+pub fn time_layout(
+    num: f64,
+    decimals: usize,
+    font: &DigitType,
+) -> (Layout, usize) {
+    let (time, height) = get_time(num, decimals, font);
     let grad =
         Grad::new(time, (0, 220, 255), (160, 100, 255)).wrap(Wrap::Letter);
     let mut layout = Layout::horizontal().center();

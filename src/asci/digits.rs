@@ -4,13 +4,13 @@ use super::digit_type::DigitType;
 
 /// Gets HashMap containing all the digits and point in ASCII art
 pub fn get_digits(
-    font: DigitType,
+    font: &DigitType,
 ) -> (HashMap<char, Vec<&'static str>>, usize) {
     match font {
         DigitType::Italic => get_italic_digits(),
         DigitType::Train => get_train_digits(),
         DigitType::Card => get_card_digits(),
-        DigitType::Regular => get_regular_digits(),
+        // DigitType::Regular => get_regular_digits(),
     }
 }
 
@@ -381,6 +381,7 @@ fn get_card_digits() -> (HashMap<char, Vec<&'static str>>, usize) {
     )
 }
 
+#[allow(unused)]
 fn get_regular_digits() -> (HashMap<char, Vec<&'static str>>, usize) {
     (
         HashMap::from([

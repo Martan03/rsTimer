@@ -12,22 +12,22 @@ use crate::{args::Args, stats::stats::Stats};
 mod app;
 mod args;
 mod asci;
+mod config;
 mod error;
 mod scramble;
 mod stats;
-mod stats_manager;
 mod timer;
 
-fn main() {
+fn main() -> Result<(), Error> {
     let args = match Args::parse(args()) {
         Ok(args) => args,
         Err(_) => {
             println!("Error parsing arguments");
-            return;
+            return Ok(());
         }
     };
 
-    _ = run(args);
+    run(args)
 }
 
 /// Runs the app based on arguments

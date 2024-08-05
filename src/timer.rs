@@ -27,6 +27,12 @@ impl App {
     /// Listens to pressed keys while showing Timer screen
     pub fn listen_timer(&mut self, code: KeyCode) -> Result<(), Error> {
         match code {
+            KeyCode::Right | KeyCode::Char('l') | KeyCode::Char('L') => {
+                self.config.set_font(self.config.font.next())?;
+            }
+            KeyCode::Left | KeyCode::Char('h') | KeyCode::Char('H') => {
+                self.config.set_font(self.config.font.prev())?;
+            }
             KeyCode::Tab => self.screen = Screen::Stats,
             KeyCode::Char(' ') => self.start_timer()?,
             KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
@@ -51,7 +57,7 @@ impl App {
         block.add_child(scramble.align(TextAlign::Center), Constraint::Min(1));
         block.add_child(Spacer::new(), Constraint::Fill);
 
-        let (time, height) = time_layout(time, 3);
+        let (time, height) = time_layout(time, 3, &self.config.font);
         block.add_child(time, Constraint::Length(height));
 
         block.add_child(Spacer::new(), Constraint::Fill);
@@ -64,7 +70,7 @@ impl App {
     fn start_timer(&mut self) -> Result<(), Error> {
         let start = Instant::now();
 
-        let wait_time = Duration::from_secs_f64(0.1);
+        let wait_time = Duration::from_secs_f64(0.001);
         let mut last = start;
 
         let mut running = true;
@@ -84,6 +90,7 @@ impl App {
                 Stat::new(self.time, scramble.get().to_owned(), String::new()),
                 &self.session.as_ref().unwrap(),
             )?;
+            self.stats.save()?;
             scramble.generate();
         }
         Ok(())
