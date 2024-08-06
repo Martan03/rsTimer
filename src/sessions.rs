@@ -9,7 +9,7 @@ use termint::{
 use crate::{
     app::{App, Screen},
     error::Error,
-    scramble::get_scramble,
+    scramble::Scramble,
     widgets::raw_span::RawSpan,
 };
 
@@ -69,7 +69,7 @@ impl App {
                     return Ok(());
                 };
 
-                let mut scramble = get_scramble(&session_info.scramble_type);
+                let mut scramble = Scramble::new(&session_info.scramble_type);
                 scramble.generate();
                 self.scramble = Some(scramble);
 

@@ -18,10 +18,7 @@ use termint::{
 };
 
 use crate::{
-    config::Config,
-    error::Error,
-    scramble::{get_scramble, Scramble},
-    stats::stats::Stats,
+    config::Config, error::Error, scramble::Scramble, stats::stats::Stats,
 };
 
 #[derive(Debug, Clone, Default)]
@@ -50,7 +47,7 @@ impl App {
     /// Creates new [`App`]
     pub fn new() -> Self {
         Self {
-            term: Term::new().small_screen(App::small_screen()),
+            term: Term::new(),
             ..Default::default()
         }
     }
@@ -62,7 +59,7 @@ impl App {
             return Self::default();
         };
 
-        let mut scramble = get_scramble(&session_info.scramble_type);
+        let mut scramble = Scramble::new(&session_info.scramble_type);
         scramble.generate();
 
         Self {
@@ -70,7 +67,7 @@ impl App {
             screen: Screen::Timer,
             scramble: Some(scramble),
             stats,
-            term: Term::new().small_screen(App::small_screen()),
+            term: Term::new(),
             ..Default::default()
         }
     }
@@ -127,7 +124,7 @@ impl App {
         }
     }
 
-    fn small_screen() -> Layout {
+    fn _small_screen() -> Layout {
         let mut layout = Layout::vertical().center();
         layout.add_child(
             "Terminal too small!"

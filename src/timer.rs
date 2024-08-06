@@ -3,8 +3,9 @@ use std::time::{Duration, Instant};
 use crossterm::event::{poll, read, Event, KeyCode, KeyEvent};
 use termint::{
     enums::Color,
-    geometry::{Constraint, TextAlign},
-    widgets::{Layout, Spacer, StrSpanExtension},
+    geometry::Constraint,
+    style::Style,
+    widgets::{Block, Layout, List, Spacer},
 };
 
 use crate::{
@@ -35,8 +36,48 @@ impl App {
             KeyCode::Left | KeyCode::Char('h') | KeyCode::Char('H') => {
                 self.config.set_font(self.config.font.prev())?;
             }
+            KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
+                {
+                    let mut state = self.stats_state.borrow_mut();
+                    if let Some(sel) = state.selected {
+                        state.selected = Some(sel.saturating_sub(1));
+                    }
+                }
+                self.term.rerender()?;
+                return Ok(());
+            }
+            KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
+                {
+                    let mut state = self.stats_state.borrow_mut();
+                    if let Some(sel) = state.selected {
+                        if sel + 1
+                            < self
+                                .stats
+                                .get_session(self.session.as_ref().unwrap())
+                                .unwrap()
+                                .stats
+                                .len()
+                        {
+                            state.selected = Some(sel + 1);
+                        }
+                    }
+                }
+                self.term.rerender()?;
+                return Ok(());
+            }
+            KeyCode::Delete => {
+                if let Some(sel) = self.stats_state.borrow().selected {
+                    self.stats.remove(sel, self.session.as_ref().unwrap());
+                }
+                return self.render_timer();
+            }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 self.screen = Screen::Sessions
+            }
+            KeyCode::Char('n') | KeyCode::Char('N') => {
+                if let Some(scramble) = &mut self.scramble {
+                    scramble.generate();
+                }
             }
             KeyCode::Tab => self.screen = Screen::Stats,
             KeyCode::Char(' ') => self.start_timer()?,
@@ -54,18 +95,25 @@ impl App {
         time: f64,
         scramble: &str,
     ) -> Result<(), Error> {
-        let mut layout = Layout::vertical();
-        layout
-            .add_child(scramble.align(TextAlign::Center), Constraint::Min(1));
-        layout.add_child(Spacer::new(), Constraint::Fill);
+        let mut slayout = Layout::horizontal().center();
+        slayout.add_child(scramble, Constraint::Min(0));
 
+        let mut timer = Layout::vertical();
+        timer.add_child(slayout, Constraint::Min(1));
+        timer.add_child(Spacer::new(), Constraint::Fill);
         let (time, height) = time_layout(time, 3, &self.config.font);
-        layout.add_child(time, Constraint::Length(height));
+        timer.add_child(time, Constraint::Length(height));
+        timer.add_child(Spacer::new(), Constraint::Fill);
 
-        layout.add_child(Spacer::new(), Constraint::Fill);
-        layout.add_child(self.timer_help(), Constraint::Length(1));
+        let mut layout = Layout::horizontal();
+        layout.add_child(self.timer_stats(), Constraint::Length(12));
+        layout.add_child(timer, Constraint::Fill);
 
-        self.term.render(layout)?;
+        let mut main = Layout::vertical();
+        main.add_child(layout, Constraint::Fill);
+        main.add_child(self.timer_help(), Constraint::Length(1));
+
+        self.term.render(main)?;
         Ok(())
     }
 
@@ -108,6 +156,30 @@ impl App {
             KeyCode::Char(' ') => false,
             _ => true,
         })
+    }
+
+    fn timer_stats(&mut self) -> Block {
+        let name = self.session.clone().unwrap_or("".to_string());
+        let mut block = Block::vertical().title(name.as_str());
+
+        let stats: Vec<String> = self.stats.sessions
+            [self.session.as_ref().unwrap()]
+        .stats
+        .iter()
+        .map(|i| format!("{:.3}", i.time.as_secs_f64()))
+        .collect();
+
+        if stats.is_empty() {
+            block.add_child("No times set yet...", Constraint::Fill);
+        } else {
+            block.add_child(
+                List::new(stats, self.stats_state.clone())
+                    .selected_style(Style::new().fg(Color::Cyan))
+                    .auto_scroll(),
+                Constraint::Fill,
+            );
+        }
+        block
     }
 
     fn timer_help(&self) -> Layout {
