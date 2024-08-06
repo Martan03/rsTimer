@@ -1,6 +1,6 @@
 # rsTimer
 
-Command line application for timing you Rubik's cube solves.
+Rubik's cube TUI timer in Rust 🦀
 
 ![image](https://github.com/Martan03/rsTimer/assets/46300167/46877348-6014-44f6-b122-b3375e41bcc8)
 

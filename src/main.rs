@@ -15,8 +15,10 @@ mod asci;
 mod config;
 mod error;
 mod scramble;
+mod sessions;
 mod stats;
 mod timer;
+mod widgets;
 
 fn main() -> Result<(), Error> {
     let args = match Args::parse(args()) {

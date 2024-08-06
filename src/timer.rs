@@ -2,8 +2,9 @@ use std::time::{Duration, Instant};
 
 use crossterm::event::{poll, read, Event, KeyCode, KeyEvent};
 use termint::{
+    enums::Color,
     geometry::{Constraint, TextAlign},
-    widgets::{Block, BorderType, Spacer, StrSpanExtension},
+    widgets::{Layout, Spacer, StrSpanExtension},
 };
 
 use crate::{
@@ -11,6 +12,7 @@ use crate::{
     asci::time_layout,
     error::Error,
     stats::stat::Stat,
+    widgets::raw_span::RawSpan,
 };
 
 /// Idle and running timer implementation
@@ -33,6 +35,9 @@ impl App {
             KeyCode::Left | KeyCode::Char('h') | KeyCode::Char('H') => {
                 self.config.set_font(self.config.font.prev())?;
             }
+            KeyCode::Char('s') | KeyCode::Char('S') => {
+                self.screen = Screen::Sessions
+            }
             KeyCode::Tab => self.screen = Screen::Stats,
             KeyCode::Char(' ') => self.start_timer()?,
             KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
@@ -49,20 +54,18 @@ impl App {
         time: f64,
         scramble: &str,
     ) -> Result<(), Error> {
-        let name = self.session.clone().unwrap_or("".to_string());
-        let mut block = Block::vertical()
-            .title(name.as_str())
-            .border_type(BorderType::Thicker);
-
-        block.add_child(scramble.align(TextAlign::Center), Constraint::Min(1));
-        block.add_child(Spacer::new(), Constraint::Fill);
+        let mut layout = Layout::vertical();
+        layout
+            .add_child(scramble.align(TextAlign::Center), Constraint::Min(1));
+        layout.add_child(Spacer::new(), Constraint::Fill);
 
         let (time, height) = time_layout(time, 3, &self.config.font);
-        block.add_child(time, Constraint::Length(height));
+        layout.add_child(time, Constraint::Length(height));
 
-        block.add_child(Spacer::new(), Constraint::Fill);
+        layout.add_child(Spacer::new(), Constraint::Fill);
+        layout.add_child(self.timer_help(), Constraint::Length(1));
 
-        self.term.render(block)?;
+        self.term.render(layout)?;
         Ok(())
     }
 
@@ -105,5 +108,34 @@ impl App {
             KeyCode::Char(' ') => false,
             _ => true,
         })
+    }
+
+    fn timer_help(&self) -> Layout {
+        let mut layout = Layout::horizontal();
+        layout.add_child(
+            RawSpan::new("[Space]Start ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[Tab]Stats ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[s]Sessions ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[→|l]Next font ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[←|h]Prev. font ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[Esc|q]Quit ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout
     }
 }

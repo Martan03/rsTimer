@@ -13,15 +13,7 @@ pub struct Stat {
 }
 
 impl Stat {
-    /// Creates new [`Stat`]
-    ///
-    /// **Parameters:**
-    /// * `time` - duration it took to solve the cube
-    /// * `scramble` - cube scramble
-    /// * `comment` - comment to be added to this solve in stats
-    ///
-    /// **Returns:**
-    /// * Created [`Stat`]
+    /// Creates new [`Stat`] with given info about the solve
     pub fn new(time: Duration, scramble: String, comment: String) -> Stat {
         Stat {
             time,
