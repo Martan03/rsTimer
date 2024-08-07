@@ -2,7 +2,7 @@
 
 Rubik's cube TUI timer in Rust 🦀
 
-![image](https://github.com/Martan03/rsTimer/assets/46300167/46877348-6014-44f6-b122-b3375e41bcc8)
+![image](https://github.com/user-attachments/assets/561c1482-9a03-465a-98df-6f48fd10b5c1)
 
 ## Installation:
 
@@ -13,67 +13,77 @@ you need is `cargo`:
 cargo build -r
 ```
 
-After its done compiling, you can start it in `./target/release/rstimer`
+After it's done compiling, you can start it in `./target/release/rstimer`
 
 ## Usage:
 
-Open timer *(opens session picker to choose, which session to open)*:
+You can start the timer like this *(session picker will open)*:
 ```
 ./rstimer
 ```
 
-You can check other usage cases in help:
+Or you can **skip** the session picker by specifying the session:
+```
+./rstimer <session_name>
+```
+
+You can check other usage in help:
 ```
 ./rstimer -h
 ```
 
-## Technologies:
-
-Since this was my **first project** in Rust, I used more libraries then I had
-to *(I refactored it a bit already)*. You can check all the libraries in
-`Cargo.toml` file.
-
-Just to mention some libraries I used
-[termint](https://github.com/Martan03/termint) for printing (my library :) )
-and [crossterm](https://github.com/crossterm-rs/crossterm) for handling user
-input.
-
 ## Detailed description:
-### Sessions:
-**rsTimer** contains sessions. You can create as many sessions as you want.
-Each sessions has its scramble type.
 
-When you start **rsTimer** without arguments, session picker will be opened
-and you will see all the created sessions. To be able to time solves, you need
-to select a session. You can use `Up/Down arrow` keys to navigate the list and
+### Sessions:
+
+**rsTimer** contains sessions. You can create as many sessions as you want.
+Each sessions has its scramble type *(currently only 2x2x2, 3x3x3 and 4x4x4
+are supported)*.
+
+When you run **rsTimer** with no arguments, the session picker will open and you 
+will see all created sessions. In order to time the solves, you need to select 
+a session. You can use the `Up/Down arrow` keys to scroll through the list and
 press `Enter` to open currently selected session.
-![image](https://github.com/Martan03/rsTimer/assets/46300167/9c89f848-9507-46b4-b4c8-4046ae4042f1)
+
+![image](https://github.com/user-attachments/assets/6d2a9223-a864-4371-955d-1b66c152797b)
 
 ### Scrambles:
-Currently only supported scramble types are **2x2x2**, **3x3x3** and **4x4x4**.
-More scramble types will be added in the future. Note that the scrambles
-**aren't** WCA. This I might focus on in the future as well.
+**rsTimer** currently supports scrambles for **2x2x2**, **3x3x3** and **4x4x4** 
+only. More scramble types will be added in the future.
+
+**Note**: scrambles are **not** guaranteed to be WCA
 
 ### Timing:
-When you start **rsTimer** and open a session, you can start timing your
-solves. There's scramble on top, which is based on set scramble type of the
-session. You can start timing a solve by pressing `Space`. After that the
-timer will be started and you can start solving the cube. When you're done, you
+When you run **rsTimer** and open a session, you can start timing your
+solves. There's scramble on top, which is based on the set scramble type of the
+session. To start the timer, you have to press a `Space`. When you're done, you
 can press `Space` again to stop the timer. New scramble will be generated and
 you will see your time.
-![image](https://github.com/Martan03/rsTimer/assets/46300167/2e6e72db-e43b-439f-ac08-2de46ba4c067)
 
-### Stats:
-Currently you can only display all times in the current session, but I'm
-planning to add more stats in the future.
+On the left side of the timer there are listed previous solves. You can scroll
+through them by using `Up/Down arrow` keys. You can also delete currently 
+selected time by pressing `Del` key.
 
-You can open the stats from the page with the generated scramble. To open them
-you can press `Tab`. To exit stats you can simply press `Tab` again. When you
-press `Delete`, currently selected time will be deleted.
-![image](https://github.com/Martan03/rsTimer/assets/46300167/7058e820-27af-4bdc-a6c8-c7c1ec3c5bdf)
+You can also change the font of the timer *(more fonts will be added later)*
+by pressing `Left/Right arrow` key. The set font is saved and used the next 
+time you use the timer.
 
-### Other keybinds:
-`Esc` closes **rsTimer** (note that timer can't be running)
+![image](https://github.com/user-attachments/assets/2e54d0f4-01c3-4dd5-8ea7-496b63c2b086)
+
+### Other keybinds (work when timer is not running):
+`Esc/q`: closes **rsTimer**
+`s`: switches to the session picker
+
+## Technologies:
+
+This was my **first project** in Rust 🦀, but since then I've refactored the
+code quite a bit.
+
+Some of the libraries I used:
+- [termint](https://github.com/Martan03/termint): TUI
+- [crossterm](https://github.com/crossterm-rs/crossterm): handling input
+- [dirs](https://crates.io/crates/dirs): accessing `~/.config` folder
+- [serde](https://crates.io/crates/serde): saving to JSON files
 
 ## Links
 
