@@ -2,7 +2,7 @@
 
 Rubik's cube TUI timer in Rust 🦀
 
-![image](https://github.com/user-attachments/assets/561c1482-9a03-465a-98df-6f48fd10b5c1)
+![image](https://github.com/user-attachments/assets/2e54d0f4-01c3-4dd5-8ea7-496b63c2b086)
 
 ## Installation:
 
