@@ -79,7 +79,6 @@ impl App {
                     scramble.generate();
                 }
             }
-            KeyCode::Tab => self.screen = Screen::Stats,
             KeyCode::Char(' ') => self.start_timer()?,
             KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
                 return Err(Error::Exit)
@@ -139,7 +138,7 @@ impl App {
         if let Some(scramble) = &mut self.scramble {
             self.stats.add(
                 Stat::new(self.time, scramble.get().to_owned(), String::new()),
-                &self.session.as_ref().unwrap(),
+                self.session.as_ref().unwrap(),
             )?;
             self.stats.save()?;
             scramble.generate();
@@ -152,10 +151,7 @@ impl App {
             return Ok(true);
         };
 
-        Ok(match code {
-            KeyCode::Char(' ') => false,
-            _ => true,
-        })
+        Ok(!matches!(code, KeyCode::Char(' ')))
     }
 
     fn timer_stats(&mut self) -> Block {
@@ -189,11 +185,19 @@ impl App {
             Constraint::Min(0),
         );
         layout.add_child(
-            RawSpan::new("[Tab]Stats ").fg(Color::Gray),
+            RawSpan::new("[s]Sessions ").fg(Color::Gray),
             Constraint::Min(0),
         );
         layout.add_child(
-            RawSpan::new("[s]Sessions ").fg(Color::Gray),
+            RawSpan::new("[↑|k]Next stat ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[↓/j]Prev. stat ").fg(Color::Gray),
+            Constraint::Min(0),
+        );
+        layout.add_child(
+            RawSpan::new("[Del]Delete stat ").fg(Color::Gray),
             Constraint::Min(0),
         );
         layout.add_child(

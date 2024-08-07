@@ -35,11 +35,12 @@ fn main() -> Result<(), Error> {
 /// Runs the app based on arguments
 fn run(args: Args) -> Result<(), Error> {
     match args.action {
-        Some(Action::Add) => add_session(),
-        Some(Action::Help) => Ok(Args::help()),
-        Some(Action::List) => Ok(list_sessions()),
-        None => run_timer(args.session),
+        Some(Action::Add) => add_session()?,
+        Some(Action::Help) => Args::help(),
+        Some(Action::List) => list_sessions(),
+        None => run_timer(args.session)?,
     }
+    Ok(())
 }
 
 /// Starts app - if session is None, it opens session picker

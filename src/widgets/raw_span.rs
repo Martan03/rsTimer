@@ -57,7 +57,7 @@ impl Widget for RawSpan {
             offset = self.render_line(buffer, line, offset);
         }
         let stext: String = self.text.chars().take(buffer.area()).collect();
-        buffer.set_str_styled(&stext, &buffer.pos(), self.style.clone());
+        buffer.set_str_styled(&stext, &buffer.pos(), self.style);
     }
 
     fn height(&self, size: &Coords) -> usize {
@@ -81,7 +81,7 @@ impl RawSpan {
         buffer.set_str_styled(
             &stext,
             &Coords::new(buffer.x(), buffer.y() + offset),
-            self.style.clone(),
+            self.style,
         );
         (stext.chars().count() as f32 / buffer.width() as f32).ceil() as usize
     }

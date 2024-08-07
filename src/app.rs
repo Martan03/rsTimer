@@ -6,15 +6,14 @@ use std::{
 };
 
 use crossterm::{
-    event::{poll, read, Event, KeyCode, KeyEvent},
+    event::{poll, read, Event, KeyEvent},
     terminal::{disable_raw_mode, enable_raw_mode},
 };
 use termint::{
-    enums::{Color, Modifier},
+    enums::Modifier,
     geometry::{Constraint, TextAlign},
-    style::Style,
     term::Term,
-    widgets::{Block, BorderType, Layout, List, ListState, StrSpanExtension},
+    widgets::{Layout, ListState, StrSpanExtension},
 };
 
 use crate::{
@@ -24,7 +23,6 @@ use crate::{
 #[derive(Debug, Clone, Default)]
 pub enum Screen {
     Timer,
-    Stats,
     #[default]
     Sessions,
 }
@@ -106,7 +104,6 @@ impl App {
     pub fn render(&mut self) -> Result<(), Error> {
         match self.screen {
             Screen::Timer => self.render_timer(),
-            Screen::Stats => self.render_stats(),
             Screen::Sessions => self.render_sessions(),
         }
     }
@@ -119,7 +116,6 @@ impl App {
 
         match self.screen {
             Screen::Timer => self.listen_timer(code),
-            Screen::Stats => self.listen_stats(code),
             Screen::Sessions => self.listen_sessions(code),
         }
     }
@@ -152,86 +148,6 @@ impl Default for App {
             time: Duration::new(0, 0),
             sessions_state: Rc::new(RefCell::new(ListState::selected(0, 0))),
             stats_state: Rc::new(RefCell::new(ListState::selected(0, 0))),
-        }
-    }
-}
-
-impl App {
-    /// Renders Stats screen
-    fn render_stats(&mut self) -> Result<(), Error> {
-        let name = self.session.clone().unwrap_or("".to_string());
-        let mut block = Block::vertical()
-            .title(format!("{} stats", name).as_str())
-            .border_type(BorderType::Thicker);
-
-        let stats: Vec<String> = self.stats.sessions
-            [self.session.as_ref().unwrap()]
-        .stats
-        .iter()
-        .map(|i| format!("{:.3}", i.time.as_secs_f64()))
-        .collect();
-
-        if stats.is_empty() {
-            block.add_child("No times set yet...", Constraint::Fill);
-        } else {
-            block.add_child(
-                List::new(stats, self.stats_state.clone())
-                    .selected_style(Style::new().fg(Color::Cyan))
-                    .auto_scroll(),
-                Constraint::Fill,
-            );
-        }
-
-        self.term.render(block)?;
-        Ok(())
-    }
-
-    /// Listens to pressed keys while showing Stats screen
-    fn listen_stats(&mut self, code: KeyCode) -> Result<(), Error> {
-        match code {
-            KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('K') => {
-                {
-                    let mut state = self.stats_state.borrow_mut();
-                    if let Some(sel) = state.selected {
-                        state.selected = Some(sel.saturating_sub(1));
-                    }
-                }
-                self.term.rerender()?;
-                Ok(())
-            }
-            KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('J') => {
-                {
-                    let mut state = self.stats_state.borrow_mut();
-                    if let Some(sel) = state.selected {
-                        if sel + 1
-                            < self
-                                .stats
-                                .get_session(self.session.as_ref().unwrap())
-                                .unwrap()
-                                .stats
-                                .len()
-                        {
-                            state.selected = Some(sel + 1);
-                        }
-                    }
-                }
-                self.term.rerender()?;
-                Ok(())
-            }
-            KeyCode::Delete => {
-                if let Some(sel) = self.stats_state.borrow().selected {
-                    self.stats.remove(sel, self.session.as_ref().unwrap());
-                }
-                self.render_stats()
-            }
-            KeyCode::Tab => {
-                self.screen = Screen::Timer;
-                self.render_timer()
-            }
-            KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('Q') => {
-                Err(Error::Exit)
-            }
-            _ => Ok(()),
         }
     }
 }

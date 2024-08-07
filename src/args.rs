@@ -31,7 +31,7 @@ impl Args {
 
         let mut args_iter = args.into_iter();
         args_iter.next();
-        while let Some(arg) = args_iter.next() {
+        for arg in args_iter {
             match arg.as_str() {
                 "-h" | "--help" => parsed.set_action(Action::Help)?,
                 "-a" | "--add" => parsed.set_action(Action::Add)?,

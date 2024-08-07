@@ -20,7 +20,7 @@ impl Config {
         dir.push("config.json");
 
         match serde_json::from_str::<Self>(
-            &read_to_string(dir).unwrap_or(String::new()),
+            &read_to_string(dir).unwrap_or_default(),
         ) {
             Ok(conf) => conf,
             Err(_) => Self::default(),
