@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Duration;
 
 use dirs::config_dir;
 //use chrono::{offset, DateTime, Local};
@@ -91,6 +92,18 @@ impl Stats {
     /// Checks whether session exists
     pub fn exists(&self, session: &str) -> bool {
         self.sessions.contains_key(session)
+    }
+
+    /// Gets average of the given session
+    pub fn avg(&self, session: &str) -> Option<Duration> {
+        let session = self.sessions.get(session)?;
+        let total: Duration = session.stats.iter().map(|s| s.time).sum();
+
+        if session.stats.is_empty() {
+            None
+        } else {
+            Some(total / session.stats.len() as u32)
+        }
     }
 
     /// This might be removed (doesn't really make sense to be here)

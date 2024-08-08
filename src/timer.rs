@@ -5,7 +5,7 @@ use termint::{
     enums::Color,
     geometry::Constraint,
     style::Style,
-    widgets::{Block, Layout, List, Spacer},
+    widgets::{Block, Border, Layout, List, Spacer},
 };
 
 use crate::{
@@ -105,7 +105,7 @@ impl App {
         timer.add_child(Spacer::new(), Constraint::Fill);
 
         let mut layout = Layout::horizontal();
-        layout.add_child(self.timer_stats(), Constraint::Length(12));
+        layout.add_child(self.timer_stats(), Constraint::Length(17));
         layout.add_child(timer, Constraint::Fill);
 
         let mut main = Layout::vertical();
@@ -168,6 +168,24 @@ impl App {
         if stats.is_empty() {
             block.add_child("No times set yet...", Constraint::Fill);
         } else {
+            block.add_child(
+                format!("Solves: {}", stats.len()),
+                Constraint::Min(0),
+            );
+            block.add_child(
+                format!(
+                    "Mean: {:.3}",
+                    self.stats
+                        .avg(self.session.as_ref().unwrap())
+                        .unwrap_or(Duration::from_secs(0))
+                        .as_secs_f64()
+                ),
+                Constraint::Min(0),
+            );
+            block.add_child(
+                Block::vertical().borders(Border::BOTTOM),
+                Constraint::Length(1),
+            );
             block.add_child(
                 List::new(stats, self.stats_state.clone())
                     .selected_style(Style::new().fg(Color::Cyan))
