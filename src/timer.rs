@@ -68,6 +68,7 @@ impl App {
             KeyCode::Delete => {
                 if let Some(sel) = self.stats_state.borrow().selected {
                     self.stats.remove(sel, self.session.as_ref().unwrap());
+                    self.stats.save()?;
                 }
                 return self.render_timer();
             }
@@ -100,8 +101,13 @@ impl App {
         let mut timer = Layout::vertical();
         timer.add_child(slayout, Constraint::Min(1));
         timer.add_child(Spacer::new(), Constraint::Fill);
+
         let (time, height) = time_layout(time, 3, &self.config.font);
         timer.add_child(time, Constraint::Length(height));
+        timer.add_child(Spacer::new(), Constraint::Length(1));
+        self.timer_avg(&mut timer, 5);
+        self.timer_avg(&mut timer, 12);
+
         timer.add_child(Spacer::new(), Constraint::Fill);
 
         let mut layout = Layout::horizontal();
@@ -146,6 +152,7 @@ impl App {
         Ok(())
     }
 
+    /// Key listener when timer is running
     fn listen_run_timer(&mut self) -> Result<bool, Error> {
         let Event::Key(KeyEvent { code, .. }) = read()? else {
             return Ok(true);
@@ -154,7 +161,21 @@ impl App {
         Ok(!matches!(code, KeyCode::Char(' ')))
     }
 
-    fn timer_stats(&mut self) -> Block {
+    /// Renders average of n
+    fn timer_avg(&self, layout: &mut Layout, n: usize) {
+        if let Some(avg) = self.stats.avg_of(self.session.as_ref().unwrap(), n)
+        {
+            let mut center = Layout::horizontal().center();
+            center.add_child(
+                format!("AO{}: {:.3}", n, avg.as_secs_f64()),
+                Constraint::Min(0),
+            );
+            layout.add_child(center, Constraint::Min(0));
+        }
+    }
+
+    /// Renders timer stats
+    fn timer_stats(&self) -> Block {
         let name = self.session.clone().unwrap_or("".to_string());
         let mut block = Block::vertical().title(name.as_str());
 
@@ -196,6 +217,7 @@ impl App {
         block
     }
 
+    /// Renders timer help
     fn timer_help(&self) -> Layout {
         let mut layout = Layout::horizontal();
         layout.add_child(

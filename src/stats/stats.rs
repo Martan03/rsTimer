@@ -106,6 +106,21 @@ impl Stats {
         }
     }
 
+    /// Gets average of 5 of the given session
+    pub fn avg_of(&self, session: &str, n: usize) -> Option<Duration> {
+        let session = self.sessions.get(session)?;
+        if session.stats.len() < n {
+            return None;
+        }
+
+        let mut times: Vec<Duration> =
+            session.stats.iter().take(n).map(|s| s.time).collect();
+        times.sort();
+
+        let total: Duration = times[1..(n - 1)].iter().sum();
+        Some(total / (n - 2) as u32)
+    }
+
     /// This might be removed (doesn't really make sense to be here)
     /// TODO
     pub fn print_sessions(&self) {
