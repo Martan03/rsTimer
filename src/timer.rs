@@ -5,7 +5,9 @@ use termint::{
     enums::Color,
     geometry::Constraint,
     style::Style,
-    widgets::{Block, Border, Layout, List, Spacer},
+    widgets::{
+        Block, Border, Layout, List, Paragraph, Spacer, StrSpanExtension,
+    },
 };
 
 use crate::{
@@ -65,6 +67,7 @@ impl App {
                 self.term.rerender()?;
                 return Ok(());
             }
+            KeyCode::Tab => self.screen = Screen::Solve,
             KeyCode::Delete => {
                 if let Some(sel) = self.stats_state.borrow().selected {
                     self.stats.remove(sel, self.session.as_ref().unwrap());
@@ -167,7 +170,11 @@ impl App {
         {
             let mut center = Layout::horizontal().center();
             center.add_child(
-                format!("AO{}: {:.3}", n, avg.as_secs_f64()),
+                Paragraph::new(vec![
+                    format!("AO{}:", n).fg(Color::Indexed(244)).into(),
+                    format!("{:.3}", avg.as_secs_f64()).to_span().into(),
+                ])
+                .separator(" "),
                 Constraint::Min(0),
             );
             layout.add_child(center, Constraint::Min(0));
@@ -175,7 +182,7 @@ impl App {
     }
 
     /// Renders timer stats
-    fn timer_stats(&self) -> Block {
+    pub fn timer_stats(&self) -> Block {
         let name = self.session.clone().unwrap_or("".to_string());
         let mut block = Block::vertical().title(name.as_str());
 
@@ -190,21 +197,33 @@ impl App {
             block.add_child("No times set yet...", Constraint::Fill);
         } else {
             block.add_child(
-                format!("Solves: {}", stats.len()),
+                Paragraph::new(vec![
+                    "Solves:".fg(Color::Indexed(244)).into(),
+                    stats.len().to_string().to_span().into(),
+                ])
+                .separator(" "),
                 Constraint::Min(0),
             );
             block.add_child(
-                format!(
-                    "Mean: {:.3}",
-                    self.stats
-                        .avg(self.session.as_ref().unwrap())
-                        .unwrap_or(Duration::from_secs(0))
-                        .as_secs_f64()
-                ),
+                Paragraph::new(vec![
+                    "Mean:".fg(Color::Indexed(244)).into(),
+                    format!(
+                        "{:.3}",
+                        self.stats
+                            .avg(self.session.as_ref().unwrap())
+                            .unwrap_or(Duration::from_secs(0))
+                            .as_secs_f64()
+                    )
+                    .to_span()
+                    .into(),
+                ])
+                .separator(" "),
                 Constraint::Min(0),
             );
             block.add_child(
-                Block::vertical().borders(Border::BOTTOM),
+                Block::vertical()
+                    .borders(Border::BOTTOM)
+                    .border_color(Color::Gray),
                 Constraint::Length(1),
             );
             block.add_child(

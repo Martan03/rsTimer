@@ -22,9 +22,10 @@ use crate::{
 
 #[derive(Debug, Clone, Default)]
 pub enum Screen {
-    Timer,
     #[default]
     Sessions,
+    Solve,
+    Timer,
 }
 
 /// App struct containing the main loop, key listeners and rendering
@@ -103,8 +104,9 @@ impl App {
     /// Renders current screen of the [`App`]
     pub fn render(&mut self) -> Result<(), Error> {
         match self.screen {
-            Screen::Timer => self.render_timer(),
             Screen::Sessions => self.render_sessions(),
+            Screen::Solve => self.render_solve(),
+            Screen::Timer => self.render_timer(),
         }
     }
 
@@ -115,8 +117,9 @@ impl App {
         };
 
         match self.screen {
-            Screen::Timer => self.listen_timer(code),
             Screen::Sessions => self.listen_sessions(code),
+            Screen::Solve => self.listen_solve(code),
+            Screen::Timer => self.listen_timer(code),
         }
     }
 

@@ -16,6 +16,7 @@ mod config;
 mod error;
 mod scramble;
 mod sessions;
+mod solve;
 mod stats;
 mod timer;
 mod widgets;

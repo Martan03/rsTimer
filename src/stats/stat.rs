@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Stat {
     pub time: Duration,
-    scramble: String,
+    pub scramble: String,
     comment: String,
     pub datetime: DateTime<Local>,
 }
