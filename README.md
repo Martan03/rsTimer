@@ -2,7 +2,7 @@
 
 Rubik's cube TUI timer in Rust 🦀
 
-![image](https://github.com/user-attachments/assets/2e54d0f4-01c3-4dd5-8ea7-496b63c2b086)
+![rstimer](https://github.com/user-attachments/assets/8c901dc5-c47e-4c66-a11e-89c83e01f979)
 
 ## Installation:
 
@@ -68,7 +68,14 @@ You can also change the font of the timer *(more fonts will be added later)*
 by pressing `Left/Right arrow` key. The set font is saved and used the next 
 time you use the timer.
 
-![image](https://github.com/user-attachments/assets/2e54d0f4-01c3-4dd5-8ea7-496b63c2b086)
+![rstimer](https://github.com/user-attachments/assets/8c901dc5-c47e-4c66-a11e-89c83e01f979)
+
+### Stats:
+To display more detailed stats, you can press `Tab` key. It then shows more
+details about currently selected solve, such as **scramble**, **date and time**
+and number of the **solve**. More details might be added in the future.
+
+![image](https://github.com/user-attachments/assets/f9148fc3-0024-4379-b7d4-79391fd47089)
 
 ### Other keybinds (work when timer is not running):
 `Esc/q`: closes **rsTimer**
